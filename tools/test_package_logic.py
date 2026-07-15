@@ -91,7 +91,10 @@ def test_cartridge_runtime_files() -> None:
     for guard in ["MAX_ARCHIVE_SIZE", "MAX_EXTRACTED_SIZE", "MAX_FILES", "Traversal paths are rejected", "checksum mismatch"]:
         require(re.escape(guard), installer, f"CartridgeInstaller misses guard: {guard}")
     require(r"DEVELOPER MODE", shell, "Developer Mode warning UI missing")
-    require(r"CARTRIDGE STORE", shell, "Store UI missing")
+    require(r"func show_store\(\)", shell, "Store UI entry point missing")
+    require(r'_render\("STORE",', shell, "Store title missing")
+    for section in ["Featured", "All", "Updates", "Search"]:
+        require(rf'"label": "{section}"', shell, f"Store section missing: {section}")
 
 
 def test_cartridge_manifests() -> None:

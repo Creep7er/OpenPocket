@@ -1,0 +1,32 @@
+{
+  "format_version": 1,
+  "id": "org.example.app",
+  "name": "Example App",
+  "version": "0.1.0",
+  "type": "app",
+  "entry_scene": "res://cartridges/org.example.app/main.tscn",
+  "sdk_version": "0.3.2",
+  "runtime": {
+    "min_version": "0.3.2",
+    "max_version": null
+  },
+  "author": {
+    "name": "Example Author",
+    "url": ""
+  },
+  "description": "A small OpenPocket cartridge app.",
+  "category": "utility",
+  "icon": "icon.png",
+  "license": "MIT",
+  "capabilities": ["storage", "audio", "theme", "system_menu"],
+  "permissions": [],
+  "content": {
+    "file": "content.pck",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "signature": null,
+  "store": {
+    "featured": false,
+    "tags": ["example"]
+  }
+}

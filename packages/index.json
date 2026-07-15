@@ -1,0 +1,7 @@
+{
+  "packages": [
+    "games/snake",
+    "apps/notes",
+    "games/pong"
+  ]
+}

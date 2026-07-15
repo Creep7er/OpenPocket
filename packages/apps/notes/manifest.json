@@ -1,0 +1,13 @@
+{
+  "id": "org.openpocket.notes",
+  "name": "Pocket Notes",
+  "version": "0.3.0-dev",
+  "type": "app",
+  "entry_scene": "main.tscn",
+  "sdk_version": "0.3.0",
+  "author": "OpenPocket Contributors",
+  "description": "Short local notes with a pixel keyboard.",
+  "category": "productivity",
+  "license": "MIT",
+  "capabilities": ["storage", "audio", "theme", "system_menu"]
+}

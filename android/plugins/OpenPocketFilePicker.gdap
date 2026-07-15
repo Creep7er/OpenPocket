@@ -1,0 +1,11 @@
+[config]
+
+name="OpenPocketFilePicker"
+binary_type="local"
+binary="OpenPocketFilePicker.aar"
+
+[dependencies]
+
+local=[]
+remote=[]
+custom_maven_repos=[]

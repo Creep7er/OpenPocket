@@ -1,0 +1,36 @@
+name: Cartridge issue
+description: Report a cartridge compatibility, install, or lifecycle problem
+title: "[Cartridge]: "
+labels: ["cartridge"]
+body:
+  - type: input
+    id: identity
+    attributes:
+      label: Cartridge id and version
+      placeholder: "org.example.game 1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source
+      options: [Built-in, Local mock Store, Manual file import]
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validator output or error code
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed private paths, credentials, and personal data from attachments.
+          required: true

@@ -1,0 +1,23 @@
+name: Godot Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GODOT_VERSION: "4.7-stable"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Godot
+        run: |
+          curl --fail --location --output godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v${GODOT_VERSION}_linux.x86_64
+      - name: Headless editor import
+        run: ./Godot_v${GODOT_VERSION}_linux.x86_64 --headless --path . --editor --quit
+      - name: Runtime smoke
+        run: ./Godot_v${GODOT_VERSION}_linux.x86_64 --headless --path . res://tools/smoke_runner.tscn

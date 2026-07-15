@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openpocket.dev/schemas/cartridge.schema.json",
+  "title": "OpenPocket cartridge manifest",
+  "type": "object",
+  "required": [
+    "format_version",
+    "id",
+    "name",
+    "version",
+    "type",
+    "entry_scene",
+    "sdk_version",
+    "runtime",
+    "author",
+    "description",
+    "content"
+  ],
+  "properties": {
+    "format_version": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(\\.[a-z0-9_-]+)+$"},
+    "name": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "type": {"type": "string", "enum": ["game", "app", "theme"]},
+    "entry_scene": {"type": "string", "minLength": 1},
+    "sdk_version": {"type": "string", "minLength": 1},
+    "runtime": {
+      "type": "object",
+      "required": ["min_version"],
+      "properties": {
+        "min_version": {"type": "string"},
+        "max_version": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "author": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "url": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "description": {"type": "string"},
+    "category": {"type": "string"},
+    "icon": {"type": "string"},
+    "license": {"type": "string"},
+    "capabilities": {
+      "oneOf": [
+        {"type": "array", "items": {"type": "string"}},
+        {
+          "type": "object",
+          "properties": {
+            "required": {"type": "array", "items": {"type": "string"}},
+            "optional": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "permissions": {"type": "array", "items": {"type": "string"}},
+    "content": {
+      "type": "object",
+      "required": ["file", "sha256"],
+      "properties": {
+        "file": {"type": "string", "const": "content.pck"},
+        "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"}
+      },
+      "additionalProperties": true
+    },
+    "signature": {"type": ["object", "null"]},
+    "store": {"type": "object"}
+  },
+  "additionalProperties": true
+}

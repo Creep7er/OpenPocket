@@ -1,0 +1,6 @@
+{
+  "id": "org.openpocket.dice", "name": "Pocket Dice", "version": "1.0.0", "type": "app",
+  "entry_scene": "main.tscn", "sdk_version": "0.3.2", "author": "OpenPocket Examples",
+  "description": "Controller-first polyhedral dice roller.", "category": "utility",
+  "capabilities": ["storage", "audio", "theme", "system_menu"]
+}

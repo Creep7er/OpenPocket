@@ -1,0 +1,43 @@
+name: Android Compact
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compact-debug:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GODOT_VERSION: "4.7-stable"
+      ANDROID_HOME: ${{ github.workspace }}/android-sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Android command line tools
+        run: |
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl --fail --location --output cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q cmdline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+          mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-36" "build-tools;35.0.1"
+      - name: Install Godot and export templates
+        run: |
+          curl --fail --location --output godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x "Godot_v${GODOT_VERSION}_linux.x86_64"
+          curl --fail --location --output templates.tpz "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
+          unzip -q templates.tpz -d template-extract
+          cp -R template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
+      - name: Install Android build template
+        run: "./Godot_v${GODOT_VERSION}_linux.x86_64 --headless --path . --install-android-build-template"
+      - name: Export compact debug APK
+        run: "./Godot_v${GODOT_VERSION}_linux.x86_64 --headless --path . --export-debug 'Android Compact Debug' exports/android/openpocket-0.3.2-compact-debug.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openpocket-0.3.2-compact-debug
+          path: exports/android/openpocket-0.3.2-compact-debug.apk
+          retention-days: 7

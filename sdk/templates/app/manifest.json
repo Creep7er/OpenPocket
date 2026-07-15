@@ -1,0 +1,9 @@
+{
+  "id": "org.example.app",
+  "name": "Example App",
+  "version": "0.1.0",
+  "type": "app",
+  "entry_scene": "main.tscn",
+  "sdk_version": "0.3.2",
+  "author": "Your Name"
+}

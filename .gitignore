@@ -1,0 +1,45 @@
+# Godot
+.godot/
+*.translation
+docs/screenshots/*.png.import
+
+# Local tools, builds, and publication staging
+.tools/
+.tmp/
+.cache/
+build/
+android/build/
+android/.gradle/
+android/plugins/**/build/
+android/plugins/**/.gradle/
+dist/
+exports/
+artifacts/
+publication/
+*.apk
+*.aab
+
+# Credentials and local Android configuration
+*.jks
+*.keystore
+local.properties
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs, crashes, and user data
+logs/
+crash*/
+dumps/
+user-data/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

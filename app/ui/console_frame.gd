@@ -21,7 +21,7 @@ const ACTION_TOUCH_PAD := 16.0
 const VGIRL_SIDE_GAP := 8.0
 const VGIRL_MIN_SIDE_ZONE := 124.0
 const VGIRL_SCALE_STEP := 0.125
-const VGIRL_MAX_DPAD_SIZE := 184.0
+const VGIRL_MAX_DPAD_SIZE := 220.0
 
 signal virtual_button_changed(button: String, pressed: bool)
 
@@ -83,6 +83,7 @@ func set_screen(screen: Node) -> void:
 	if screen is Control:
 		var control := screen as Control
 		control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_apply_screen_ui_scale()
 
 
 func show_screen_overlay(overlay: Control) -> void:
@@ -90,6 +91,7 @@ func show_screen_overlay(overlay: Control) -> void:
 	current_overlay = overlay
 	screen_viewport.add_child(overlay)
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_apply_screen_ui_scale()
 
 
 func clear_screen_overlay() -> void:
@@ -164,6 +166,7 @@ func _layout_for_window(window_size: Vector2, safe_override: Rect2 = Rect2()) ->
 	if String(PocketStorage.get_setting("console_profile", "vboy")) == "vgirl" and window_size.x > window_size.y:
 		_layout_vgirl()
 		return
+	_ui_text_scale = 1
 	var outer_margin: float = clamp(_safe_rect.size.x * 0.018, 4.0, SAFE_FALLBACK_MARGIN)
 	_content_rect = _safe_rect.grow(-outer_margin)
 	var console_w: float = min(MAX_CONSOLE_WIDTH, _content_rect.size.x - MIN_SIDE_MARGIN * 2.0)
@@ -246,6 +249,7 @@ func _layout_for_window(window_size: Vector2, safe_override: Rect2 = Rect2()) ->
 	system_buttons[PocketInput.MENU].size = _menu_rect.size
 	system_buttons[PocketInput.EXIT].position = _back_rect.position
 	system_buttons[PocketInput.EXIT].size = _back_rect.size
+	_apply_screen_ui_scale()
 	queue_redraw()
 
 
@@ -280,7 +284,7 @@ func _layout_vgirl() -> void:
 	screen_container.size = _screen_rect.size
 	_screen_scale = minf(screen_w / float(PocketScreen.LOGICAL_SIZE.x), screen_h / float(PocketScreen.LOGICAL_SIZE.y))
 	_shell_scale = _console_rect.size.y / 360.0
-	_ui_text_scale = 1
+	_ui_text_scale = 2
 
 	var left_zone := Rect2(
 		Vector2(_console_rect.position.x + margin, display_top),
@@ -291,14 +295,18 @@ func _layout_vgirl() -> void:
 		Vector2(_console_rect.end.x - margin - _screen_rect.end.x - VGIRL_SIDE_GAP, display_h)
 	)
 	_controls_rect = Rect2(left_zone.position, Vector2(right_zone.end.x - left_zone.position.x, display_h))
-	var control_size: float = floor(clamp(minf(left_zone.size.x * 0.82, display_h * 0.62), 96.0, VGIRL_MAX_DPAD_SIZE))
+	var roomy_controls := _console_rect.size.y >= 500.0
+	var control_limit: float = VGIRL_MAX_DPAD_SIZE if roomy_controls else 156.0
+	var zone_ratio: float = 0.88 if roomy_controls else 0.82
+	var height_ratio: float = 0.72 if roomy_controls else 0.62
+	var control_size: float = floor(clamp(minf(left_zone.size.x * zone_ratio, display_h * height_ratio), 96.0, control_limit))
 	_dpad_rect = Rect2((left_zone.get_center() - Vector2(control_size, control_size) * 0.5).floor(), Vector2(control_size, control_size))
 	dpad.position = _dpad_rect.position
 	dpad.size = _dpad_rect.size
 	_place_stick(_dpad_rect)
 
-	var primary_size: float = floor(clamp(control_size * 0.44, 52.0, 86.0))
-	var secondary_size: float = floor(clamp(primary_size * 0.82, 44.0, 72.0))
+	var primary_size: float = floor(clamp(control_size * (0.48 if roomy_controls else 0.44), 68.0 if roomy_controls else 52.0, 104.0 if roomy_controls else 86.0))
+	var secondary_size: float = floor(clamp(primary_size * 0.84, 60.0 if roomy_controls else 44.0, 88.0 if roomy_controls else 72.0))
 	_place_action_cluster(right_zone, primary_size, secondary_size)
 
 	var sys_w: float = floor(clamp(center_w * 0.25, 70.0, 94.0))
@@ -311,7 +319,14 @@ func _layout_vgirl() -> void:
 	system_buttons[PocketInput.MENU].size = _menu_rect.size
 	system_buttons[PocketInput.EXIT].position = _back_rect.position
 	system_buttons[PocketInput.EXIT].size = _back_rect.size
+	_apply_screen_ui_scale()
 	queue_redraw()
+
+
+func _apply_screen_ui_scale() -> void:
+	for target in [current_screen, current_overlay]:
+		if target != null and target.has_method("set_ui_scale"):
+			target.call("set_ui_scale", _ui_text_scale)
 
 
 func _place_stick(direction_rect: Rect2) -> void:

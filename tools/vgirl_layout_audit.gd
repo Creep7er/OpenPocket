@@ -51,7 +51,11 @@ func _run() -> void:
 		var controls_ok := dpad.size.x >= 96.0
 		var screen_fill: float = screen.size.x / console.size.x
 		var fills_console := screen_fill >= 0.45
-		var passed := not overlap and readable and controls_ok and fills_console
+		var text_scale_ok := int(app.console_frame.get("_ui_text_scale")) == 2
+		if window_size.y >= 500:
+			var minimum_action_width := 200.0 if window_size.y >= 700 else 175.0
+			controls_ok = dpad.size.x >= 190.0 and actions.size.x >= minimum_action_width
+		var passed := not overlap and readable and controls_ok and fills_console and text_scale_ok
 		failed = failed or not passed
 		lines.append("%dx%d | %d | %s | %s | %s | %d%% | %s | %s" % [window_size.x, window_size.y, int(app.console_frame.get("_ui_text_scale")), _rect(screen), _rect(dpad), _rect(actions), int(screen_fill * 100.0), "YES" if overlap else "NO", "PASS" if passed else "FAIL"])
 		if not reasons.is_empty(): lines.append("  overlap: " + ", ".join(reasons))

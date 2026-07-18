@@ -32,6 +32,7 @@ var _picker_purpose := "cartridge"
 var _title := "POPUGVPOCKET"
 var _intro := ""
 var preview_theme_id := ""
+var ui_scale := 1
 
 
 func _ready() -> void:
@@ -164,6 +165,11 @@ func show_about() -> void:
 
 func set_input_enabled(value: bool) -> void:
 	input_enabled = value
+
+
+func set_ui_scale(value: int) -> void:
+	ui_scale = clampi(value, 1, 2)
+	queue_redraw()
 
 
 func _render(title: String, intro: String) -> void:
@@ -919,9 +925,9 @@ func _draw_boot(p: Dictionary) -> void:
 func _draw_screen_body(p: Dictionary) -> void:
 	var y := 56
 	for line in _intro.split("\n"):
-		PixelFont.draw_text(self, Vector2(18, y), line, p["light"], 1)
-		y += 12
-	y += 8
+		PixelFont.draw_text(self, Vector2(18, y), _fit_text(line, size.x - 36.0), p["light"], ui_scale)
+		y += 18 if ui_scale == 2 else 12
+	y += 6 if ui_scale == 2 else 8
 	for index in range(items.size()):
 		var selected := index == selected_index
 		var row_rect := Rect2(Vector2(14, y - 4), Vector2(size.x - 28, 20))
@@ -930,8 +936,9 @@ func _draw_screen_body(p: Dictionary) -> void:
 			draw_rect(row_rect, p["hi"], false, 2)
 		var cursor := ">" if selected and int(cursor_tick * 5.0) % 2 == 0 else " "
 		var color: Color = p["dark"] if selected else p["hi"]
-		PixelFont.draw_text(self, Vector2(22, y), cursor + " " + _item_text(items[index]), color, 1)
-		y += 24
+		var item_text := _fit_text(cursor + " " + _item_text(items[index]), size.x - 44.0)
+		PixelFont.draw_text(self, Vector2(22, y), item_text, color, ui_scale)
+		y += 22 if ui_scale == 2 else 24
 	if screen == "library" and not packages.is_empty() and selected_index < packages.size():
 		var manifest: Dictionary = packages[selected_index]
 		var preview := String(manifest.get("type", "cartridge")).to_upper()
@@ -940,7 +947,7 @@ func _draw_screen_body(p: Dictionary) -> void:
 		if StoreService.has_update(String(manifest.get("id", ""))):
 			preview += "\nUPDATE AVAILABLE"
 		draw_rect(Rect2(Vector2(16, size.y - 78), Vector2(size.x - 32, 48)), p["mid"], false, 2)
-		PixelFont.draw_text(self, Vector2(24, size.y - 68), preview, p["light"], 1)
+		PixelFont.draw_text(self, Vector2(24, size.y - 68), preview, p["light"], ui_scale)
 
 
 func _draw_footer(p: Dictionary) -> void:
@@ -962,7 +969,13 @@ func _draw_footer(p: Dictionary) -> void:
 			footer = "A TYPE/OPEN  X DELETE  B BACK"
 		"install_confirmation", "developer_required", "uninstall_confirmation":
 			footer = "A SELECT  B CANCEL  X DETAILS" if screen == "install_confirmation" else "A SELECT  B CANCEL"
-	PixelFont.draw_text(self, Vector2(16, size.y - 18), footer, p["light"], 1)
+	PixelFont.draw_text(self, Vector2(16, size.y - 18), _fit_text(footer, size.x - 32.0), p["light"], ui_scale)
+
+
+func _fit_text(value: String, max_width: float) -> String:
+	var character_width := float((PixelFont.CHAR_W + PixelFont.GAP) * ui_scale)
+	var max_characters := maxi(1, int(floor(max_width / character_width)))
+	return value.left(max_characters)
 
 
 func _draw_scanlines(p: Dictionary) -> void:

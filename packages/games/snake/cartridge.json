@@ -1,20 +1,20 @@
 {
-  "format_version": 1,
-  "id": "org.openpocket.snake",
+  "format_version": 2,
+  "id": "org.popugonet.popugvpocket.snake",
   "name": "Snake",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "game",
   "entry_scene": "res://packages/games/snake/main.tscn",
-  "sdk_version": "0.4.0",
+  "sdk_version": "0.5.0",
   "runtime": {
-    "min_version": "0.4.0",
+    "min_version": "0.5.0",
     "max_version": null
   },
   "author": {
-    "name": "OpenPocket Contributors",
-    "url": "https://github.com/Creep7er/OpenPocket"
+    "name": "PopugVPocket Contributors",
+    "url": "https://github.com/Creep7er/PopugVPocket"
   },
-  "description": "Classic Snake for OpenPocket.",
+  "description": "Classic Snake for PopugVPocket.",
   "category": "arcade",
   "icon": "icon.png",
   "license": "MIT",

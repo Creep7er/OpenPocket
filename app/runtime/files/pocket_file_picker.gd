@@ -9,11 +9,12 @@ signal copy_progress(bytes_copied: int, total_bytes: int)
 const Paths := preload("res://app/runtime/cartridges/cartridge_paths.gd")
 const MAX_FILE_SIZE := 64 * 1024 * 1024
 const COPY_CHUNK_SIZE := 256 * 1024
-const ANDROID_PLUGIN_NAME := "OpenPocketFilePicker"
+const ANDROID_PLUGIN_NAME := "PopugVPocketFilePicker"
 
 var state := "idle"
 var _android_plugin: Object
 var _dialog: FileDialog
+var _mode := "cartridge"
 
 
 func _ready() -> void:
@@ -32,6 +33,16 @@ func _ready() -> void:
 
 ## Opens the platform file picker. Selected files are always copied to app-owned staging.
 func open_cartridge_file() -> void:
+	_mode = "cartridge"
+	_open_file_picker()
+
+
+func open_legacy_backup() -> void:
+	_mode = "legacy"
+	_open_file_picker()
+
+
+func _open_file_picker() -> void:
 	if state not in ["idle", "cancelled", "failed"]:
 		return
 	_set_state("selecting", "SELECTING FILE")
@@ -39,11 +50,14 @@ func open_cartridge_file() -> void:
 		if _android_plugin == null:
 			_fail("PICKER_UNAVAILABLE", "Android file picker plugin is not included.")
 			return
-		_android_plugin.openCartridgeFile(MAX_FILE_SIZE)
+		if _mode == "legacy": _android_plugin.openLegacyBackup(16 * 1024 * 1024)
+		else: _android_plugin.openCartridgeFile(MAX_FILE_SIZE)
 		return
 	if _dialog == null:
 		_fail("PICKER_UNAVAILABLE", "Desktop file picker is unavailable.")
 		return
+	_dialog.clear_filters()
+	_dialog.add_filter("*.zip", "Legacy PopugVPocket Backup") if _mode == "legacy" else _dialog.add_filter("*.pctrg", "PopugVPocket Cartridge")
 	_dialog.popup_centered_ratio(0.78)
 
 
@@ -56,7 +70,6 @@ func _create_desktop_dialog() -> void:
 	_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	_dialog.use_native_dialog = true
-	_dialog.add_filter("*.pctrg", "OpenPocket Cartridge")
 	_dialog.file_selected.connect(_on_desktop_file_selected)
 	_dialog.canceled.connect(_on_selection_cancelled)
 	add_child(_dialog)
@@ -73,7 +86,7 @@ func _on_desktop_file_selected(source_path: String) -> void:
 		source.close()
 		_fail("ARCHIVE_TOO_LARGE", "Selected file is empty or exceeds 64 MB.")
 		return
-	var destination_path := Paths.new_import_path()
+	var destination_path := Paths.DOWNLOADS_DIR.path_join("legacy-import.zip") if _mode == "legacy" else Paths.new_import_path()
 	var destination := FileAccess.open(destination_path, FileAccess.WRITE)
 	if destination == null:
 		source.close()
@@ -107,7 +120,7 @@ func _on_android_copy_progress(bytes_copied: int, total_bytes: int) -> void:
 
 
 func _on_import_ready(imported_path: String) -> void:
-	_set_state("inspecting", "READING CARTRIDGE")
+	_set_state("inspecting", "READING BACKUP" if _mode == "legacy" else "READING CARTRIDGE")
 	file_selected.emit(imported_path)
 
 

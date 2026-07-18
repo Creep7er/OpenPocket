@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DESTINATION = ROOT / "publication" / "openpocket-0.3.2"
+DEFAULT_DESTINATION = ROOT / "publication" / "popugvpocket-0.3.2"
 EXCLUDED_PREFIXES = (
     ".git/",
     ".godot/",
@@ -44,13 +44,13 @@ def included(relative: Path) -> bool:
 def write_notes(destination: Path, count: int) -> None:
     notes = destination.parent / ".publication-notes.md"
     notes.write_text(
-        f"""# OpenPocket 0.3.2 publication notes
+        f"""# PopugVPocket 0.3.2 publication notes
 
-Copy the {count} files inside `openpocket-0.3.2/` into a new empty directory.
+Copy the {count} files inside `popugvpocket-0.3.2/` into a new empty directory.
 Do not copy this notes file, the private `.git` directory, APK/AAB files, exports,
 local tools, user data, logs, or Android signing material.
 
-Suggested repository: `Creep7er/OpenPocket`
+Suggested repository: `Creep7er/PopugVPocket`
 
 Suggested description:
 
@@ -59,7 +59,7 @@ Suggested description:
 Suggested topics: `godot`, `android`, `pixel-art`, `retro-gaming`, `open-source`,
 `game-console`, `cartridge`, `gdscript`.
 
-Recommended initial commit: `feat: publish OpenPocket 0.3.2`
+Recommended initial commit: `feat: publish PopugVPocket 0.3.2`
 
 After publication:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a clean OpenPocket public source snapshot."""
+"""Validate a clean PopugVPocket public source snapshot."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ REQUIRED_SCREENSHOTS = {
     "notes.png",
     "install-cartridge.png",
     "cartridge-details.png",
-    "openpocket-hero.png",
+    "popugvpocket-hero.png",
 }
 FORBIDDEN_DIRECTORY_NAMES = {".git", ".godot", ".tools", ".tmp", ".cache", "exports", "dist", "publication", "__pycache__"}
 FORBIDDEN_SUFFIXES = {".apk", ".aab", ".jks", ".keystore", ".p12", ".pfx", ".pem", ".pyc"}
@@ -151,14 +151,14 @@ def validate_version_and_screenshots(root: Path, errors: list[str]) -> None:
             fail(errors, f"Invalid PNG screenshot: {path.relative_to(root)}")
             continue
         width, height = struct.unpack(">II", header[16:24])
-        expected = (1235, 884) if path.name == "openpocket-hero.png" else (393, 852)
+        expected = (1235, 884) if path.name == "popugvpocket-hero.png" else (393, 852)
         if (width, height) != expected:
             fail(errors, f"Unexpected screenshot size {width}x{height}: {path.relative_to(root)}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("path", nargs="?", default="publication/openpocket-0.3.2")
+    parser.add_argument("path", nargs="?", default="publication/popugvpocket-0.3.2")
     args = parser.parse_args()
     root = Path(args.path).resolve()
     if not root.is_dir():

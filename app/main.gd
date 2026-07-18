@@ -14,13 +14,20 @@ var current_route := "home"
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	DisplayServer.window_set_min_size(Vector2i(360, 640))
+	_apply_profile_window(ConsoleLayoutManager.current_profile().id)
+	ConsoleLayoutManager.profile_changed.connect(_apply_profile_window)
+	if OS.has_feature("android"):
+		DisplayServer.screen_set_orientation(ConsoleLayoutManager.current_profile().orientation)
 	CartridgeManager.bootstrap()
 	PocketPackages.load_builtin_packages()
 	PocketRouter.route_changed.connect(_on_route_changed)
 	PocketRouter.system_menu_requested.connect(_open_system_menu)
 	_build_console()
 	PocketRouter.go_home()
+
+
+func _apply_profile_window(profile_id: String) -> void:
+	DisplayServer.window_set_min_size(Vector2i(640, 360) if profile_id == "vgirl" else Vector2i(360, 640))
 
 
 func _process(_delta: float) -> void:

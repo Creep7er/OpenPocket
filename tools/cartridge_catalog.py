@@ -49,7 +49,7 @@ def build_catalog(source: Path, output: Path) -> None:
     output.write_text(
         json.dumps(
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                 "cartridges": entries,
             },
@@ -61,7 +61,7 @@ def build_catalog(source: Path, output: Path) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="OpenPocket mock catalog builder")
+    parser = argparse.ArgumentParser(description="PopugVPocket mock catalog builder")
     sub = parser.add_subparsers(dest="command", required=True)
     build = sub.add_parser("build")
     build.add_argument("source", nargs="?", default="dist/cartridges")

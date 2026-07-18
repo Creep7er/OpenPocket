@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate static OpenPocket console layout previews.
+"""Generate static PopugVPocket console layout previews.
 
 This mirrors the high-level geometry in app/ui/console_frame.gd closely enough
 to catch empty zones and overlapping controls without launching Godot.

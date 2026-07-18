@@ -25,5 +25,5 @@ func _init() -> void:
 			quit(1)
 			return
 		instance.free()
-	print("OpenPocket Godot smoke test passed.")
+	print("PopugVPocket Godot smoke test passed.")
 	quit()

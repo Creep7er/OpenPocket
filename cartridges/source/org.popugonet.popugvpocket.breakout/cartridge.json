@@ -1,0 +1,9 @@
+{
+  "format_version": 2, "id": "org.popugonet.popugvpocket.breakout", "name": "Breakout Mini", "version": "1.0.1", "type": "game",
+  "entry_scene": "res://cartridges/org.popugonet.popugvpocket.breakout/main.tscn", "sdk_version": "0.5.0",
+  "runtime": {"min_version": "0.5.0", "max_version": null}, "author": {"name": "PopugVPocket Examples", "url": ""},
+  "description": "Three-life pixel brick breaker.", "category": "arcade", "icon": "icon.png", "license": "MIT",
+  "capabilities": ["storage", "audio", "theme", "system_menu"], "permissions": [],
+  "content": {"file": "content.pck", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
+  "signature": null, "store": {"featured": true, "tags": ["arcade", "breakout"]}
+}

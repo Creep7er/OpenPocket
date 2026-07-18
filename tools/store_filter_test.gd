@@ -23,7 +23,7 @@ func _run() -> void:
 	if not update_items.is_empty():
 		_fail("Unexpected built-in updates in baseline catalog")
 		return
-	if search_items.size() != 1 or String(search_items[0].get("id", "")) != "org.openpocket.pixelclock":
+	if search_items.size() != 1 or String(search_items[0].get("id", "")) != "org.popugonet.popugvpocket.pixelclock":
 		_fail("Search filter returned incorrect items")
 		return
 	if not Array(store.call("search", "")).is_empty():

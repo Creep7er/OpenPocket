@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://app/main.gd" id="1_main"]
 
-[node name="OpenPocket" type="Control"]
+[node name="PopugVPocket" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

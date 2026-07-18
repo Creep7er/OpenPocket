@@ -7,7 +7,7 @@ const SnakeConfig := preload("res://packages/games/snake/snake_config.gd")
 const SnakeRules := preload("res://packages/games/snake/snake_rules.gd")
 const SnakeStatistics := preload("res://packages/games/snake/snake_statistics.gd")
 
-const PACKAGE_ID := "org.openpocket.snake"
+const PACKAGE_ID := "org.popugonet.popugvpocket.snake"
 const SCREEN_MENU := "menu"
 const SCREEN_PLAYING := "playing"
 const SCREEN_SETTINGS := "settings"

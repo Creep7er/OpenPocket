@@ -9,7 +9,7 @@ const MAX_EXTRACTED_SIZE := 128 * 1024 * 1024
 const MAX_FILES := 512
 const MAX_PATH_LENGTH := 180
 const MAX_DEPTH := 12
-const RUNTIME_VERSION := "0.4.0"
+const RUNTIME_VERSION := BrandConfig.VERSION
 
 
 func inspect(path: String) -> Dictionary:
@@ -195,10 +195,10 @@ func _validate_runtime(runtime: Dictionary) -> Dictionary:
 	var minimum := String(runtime.get("min_version", "0.3.0"))
 	var maximum_value: Variant = runtime.get("max_version", null)
 	if _compare_versions(RUNTIME_VERSION, minimum) < 0:
-		return _result(false, "incompatible_runtime", "OpenPocket runtime is older than cartridge minimum.")
+		return _result(false, "incompatible_runtime", "PopugVPocket runtime is older than cartridge minimum.")
 	if maximum_value != null and not String(maximum_value).is_empty():
 		if _compare_versions(RUNTIME_VERSION, String(maximum_value)) > 0:
-			return _result(false, "incompatible_runtime", "Cartridge does not support this OpenPocket runtime.")
+			return _result(false, "incompatible_runtime", "Cartridge does not support this PopugVPocket runtime.")
 	return _result(true, "ok", "")
 
 

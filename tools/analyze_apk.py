@@ -57,14 +57,14 @@ def analyze(path: Path) -> int:
         debug_files = [name for name in names if name.endswith((".dbg", ".sym", ".debug"))]
         unwanted = [name for name in names if name.startswith(UNWANTED_PREFIXES) or any(f"/{prefix}" in name for prefix in UNWANTED_PREFIXES)]
         duplicates = [name for name, count in Counter(names).items() if count > 1]
-        plugin_marker = b"OpenPocketFilePicker"
+        plugin_marker = b"PopugVPocketFilePicker"
         plugin_present = any(plugin_marker in archive.read(entry) for entry in entries if entry.filename.endswith(".dex"))
 
         print("\nAUDIT")
         print(f"ABIS {', '.join(abis) if abis else 'none'}")
         print(f"ASSETS {human_size(sum(entry.compress_size for entry in assets))}")
         print(f"PCTRG {len(pctrg)}: {', '.join(pctrg) if pctrg else 'none'}")
-        print(f"PLUGIN OpenPocketFilePicker: {'yes' if plugin_present else 'no'}")
+        print(f"PLUGIN PopugVPocketFilePicker: {'yes' if plugin_present else 'no'}")
         print(f"DEBUG SYMBOL FILES {len(debug_files)}")
         print(f"DUPLICATE ZIP PATHS {len(duplicates)}")
         print(f"UNWANTED FILES {len(unwanted)}")

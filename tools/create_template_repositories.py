@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create standalone OpenPocket app and game cartridge template repositories."""
+"""Create standalone PopugVPocket app and game cartridge template repositories."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ def manifest(package_id: str, name: str, kind: str) -> str:
             "entry_scene": "main.tscn",
             "sdk_version": SDK_VERSION,
             "author": "Your Name",
-            "description": f"{name} OpenPocket cartridge.",
+            "description": f"{name} PopugVPocket cartridge.",
             "category": "arcade" if kind == "game" else "utility",
             "capabilities": ["storage", "audio", "theme", "system_menu"],
         },
@@ -56,7 +56,7 @@ def cartridge_manifest(package_id: str, name: str, kind: str) -> str:
             "sdk_version": SDK_VERSION,
             "runtime": {"min_version": SDK_VERSION, "max_version": None},
             "author": {"name": "Your Name", "url": ""},
-            "description": f"{name} OpenPocket cartridge.",
+            "description": f"{name} PopugVPocket cartridge.",
             "category": "arcade" if kind == "game" else "utility",
             "icon": "icon.png",
             "license": "MIT",
@@ -185,9 +185,9 @@ func set_paused_by_system(paused: bool) -> void: set_process(not paused)
 
 
 def readme(kind: str, name: str, package_id: str) -> str:
-    return f'''# OpenPocket {kind.title()} Cartridge Template
+    return f'''# PopugVPocket {kind.title()} Cartridge Template
 
-Standalone Godot template for humans and AI agents. The sample is **{name}** and targets experimental OpenPocket SDK `{SDK_VERSION}`.
+Standalone Godot template for humans and AI agents. The sample is **{name}** and targets experimental PopugVPocket SDK `{SDK_VERSION}`.
 
 ## Preview
 
@@ -214,11 +214,11 @@ python tools/validate.py
 python tools/build.py
 ```
 
-The `.pctrg` is written to `dist/cartridges/`. Install it through OpenPocket's `Install Cartridge` picker with Developer Mode enabled.
+The `.pctrg` is written to `dist/cartridges/`. Install it through PopugVPocket's `Install Cartridge` picker with Developer Mode enabled.
 
 ## Manifest And Release
 
-Update version, author, description, capabilities, license, and changelog before every release. Publish source, `.pctrg`, and SHA-256. SDK code is pinned in `tools/openpocket_sdk`; replace that folder from a newer official template to update it.
+Update version, author, description, capabilities, license, and changelog before every release. Publish source, `.pctrg`, and SHA-256. SDK code is pinned in `tools/popugvpocket_sdk`; replace that folder from a newer official template to update it.
 
 ## Creating Your Cartridge Without AI
 
@@ -260,7 +260,7 @@ def create_repository(destination: Path, kind: str) -> None:
     write(destination / "cartridge" / "main.gd", APP_SCRIPT if kind == "app" else GAME_SCRIPT)
     write(destination / "cartridge" / "main.tscn", SCENE.replace("SampleRoot", name.replace(" ", "")))
     write(destination / "cartridge" / "icon.png", PLACEHOLDER_PNG)
-    write(destination / "cartridge" / "README.md", f"# {name}\n\nStarter OpenPocket {kind} cartridge.")
+    write(destination / "cartridge" / "README.md", f"# {name}\n\nStarter PopugVPocket {kind} cartridge.")
     write(destination / "cartridge" / "LICENSE", (ROOT / "LICENSE").read_text(encoding="utf-8"))
     write(destination / "docs" / "API.md", API_DOC)
     write(destination / "docs" / "BUILDING.md", BUILD_DOC)
@@ -275,9 +275,9 @@ def create_repository(destination: Path, kind: str) -> None:
     write(destination / "tools" / "setup.py", SETUP)
     builder = (ROOT / "tools" / "cartridge_builder.py").read_text(encoding="utf-8")
     builder = builder.replace("Path(__file__).resolve().parents[1]", "Path(__file__).resolve().parents[2]", 1)
-    write(destination / "tools" / "openpocket_sdk" / "cartridge_builder.py", builder)
-    write(destination / "tools" / "openpocket_sdk" / "VERSION", SDK_VERSION)
-    runtime = destination / "tools" / "openpocket_sdk" / "runtime"
+    write(destination / "tools" / "popugvpocket_sdk" / "cartridge_builder.py", builder)
+    write(destination / "tools" / "popugvpocket_sdk" / "VERSION", SDK_VERSION)
+    runtime = destination / "tools" / "popugvpocket_sdk" / "runtime"
     write(runtime / "pocket_input.gd", INPUT_STUB)
     write(runtime / "pocket_storage.gd", STORAGE_STUB)
     write(runtime / "cartridge_audio.gd", AUDIO_STUB)
@@ -288,7 +288,7 @@ def create_repository(destination: Path, kind: str) -> None:
 
 AGENTS = '''# AGENTS.md
 
-- Do not modify the OpenPocket runtime.
+- Do not modify the PopugVPocket runtime.
 - Use PocketInput, never direct Input in cartridge code.
 - Use package-scoped PocketStorage, never direct FileAccess.
 - Preserve the unique cartridge resource root.
@@ -304,20 +304,20 @@ Keep changes focused, update both manifests, preserve controller navigation, doc
 '''
 SECURITY = '''# Security
 
-OpenPocket SDK 0.3.2 does not sandbox or digitally sign external Godot code. Do not install cartridges from untrusted sources. Report vulnerabilities privately through GitHub when enabled.
+PopugVPocket SDK 0.3.2 does not sandbox or digitally sign external Godot code. Do not install cartridges from untrusted sources. Report vulnerabilities privately through GitHub when enabled.
 '''
 PROJECT = '''config_version=5
 
 [application]
-config/name="OpenPocket Cartridge Template"
+config/name="PopugVPocket Cartridge Template"
 run/main_scene="res://cartridge/main.tscn"
 
 [autoload]
-PocketInput="*res://tools/openpocket_sdk/runtime/pocket_input.gd"
-PocketStorage="*res://tools/openpocket_sdk/runtime/pocket_storage.gd"
-CartridgeAudio="*res://tools/openpocket_sdk/runtime/cartridge_audio.gd"
-PocketTheme="*res://tools/openpocket_sdk/runtime/pocket_theme.gd"
-PocketSystem="*res://tools/openpocket_sdk/runtime/pocket_system.gd"
+PocketInput="*res://tools/popugvpocket_sdk/runtime/pocket_input.gd"
+PocketStorage="*res://tools/popugvpocket_sdk/runtime/pocket_storage.gd"
+CartridgeAudio="*res://tools/popugvpocket_sdk/runtime/cartridge_audio.gd"
+PocketTheme="*res://tools/popugvpocket_sdk/runtime/pocket_theme.gd"
+PocketSystem="*res://tools/popugvpocket_sdk/runtime/pocket_system.gd"
 
 [display]
 window/size/viewport_width=400
@@ -357,7 +357,7 @@ Prompt:
 
 ```text
 Read AGENTS.md and docs/AI_AGENT_GUIDE.md.
-Create an OpenPocket cartridge based on this template.
+Create an PopugVPocket cartridge based on this template.
 Concept: [describe cartridge]
 Use PocketInput and package-scoped storage, preserve pixel/controller UI, update manifests, validate, build, and report output.
 ```
@@ -366,7 +366,7 @@ PUBLISH_DOC = '''# Publishing
 
 Publish source, license, `.pctrg`, SHA-256, package id/version, SDK compatibility, controls, capabilities, storage migration notes, and third-party notices. Do not claim signing or sandboxing.
 '''
-SKILL = '''# Create OpenPocket {kind}
+SKILL = '''# Create PopugVPocket {kind}
 
 Read AGENTS.md, choose a unique reverse-DNS id, update both manifests and script constants, use only Pocket APIs, preserve controller/pixel UI, validate, build, and report the `.pctrg` path.
 '''
@@ -413,14 +413,14 @@ for script in (ROOT / "cartridge").glob("**/*.gd"):
     assert not re.search(r"\bInput\.", text), f"direct Input in {script}"
     assert "FileAccess" not in text, f"direct FileAccess in {script}"
 assert "PixelFont" in (ROOT / "cartridge/main.gd").read_text(encoding="utf-8")
-print("OpenPocket template validation passed.")
+print("PopugVPocket template validation passed.")
 '''
 BUILD_WRAPPER = r'''#!/usr/bin/env python3
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "tools/openpocket_sdk"))
+sys.path.insert(0, str(ROOT / "tools/popugvpocket_sdk"))
 import cartridge_builder
 
 output = cartridge_builder.build(ROOT / "cartridge", ROOT / "dist/cartridges")
@@ -430,7 +430,7 @@ print(output)
 '''
 SETUP = '''#!/usr/bin/env python3
 from pathlib import Path
-print("OpenPocket SDK", (Path(__file__).parent / "openpocket_sdk/VERSION").read_text().strip())
+print("PopugVPocket SDK", (Path(__file__).parent / "popugvpocket_sdk/VERSION").read_text().strip())
 print("Setup complete. Open project.godot in Godot 4.7.")
 '''
 INPUT_STUB = '''extends Node
@@ -469,16 +469,16 @@ def main() -> int:
     if args.refresh_sdk:
         builder = (ROOT / "tools" / "cartridge_builder.py").read_text(encoding="utf-8")
         builder = builder.replace("Path(__file__).resolve().parents[1]", "Path(__file__).resolve().parents[2]", 1)
-        for repository in ["openpocket-app-template", "openpocket-game-template"]:
-            destination = args.output_root / repository / "tools" / "openpocket_sdk" / "cartridge_builder.py"
+        for repository in ["popugvpocket-app-template", "popugvpocket-game-template"]:
+            destination = args.output_root / repository / "tools" / "popugvpocket_sdk" / "cartridge_builder.py"
             if not destination.parent.exists():
                 raise SystemExit(f"Template repository missing: {destination.parent}")
             write(destination, builder)
         return 0
-    create_repository(args.output_root / "openpocket-app-template", "app")
-    create_repository(args.output_root / "openpocket-game-template", "game")
-    print(args.output_root / "openpocket-app-template")
-    print(args.output_root / "openpocket-game-template")
+    create_repository(args.output_root / "popugvpocket-app-template", "app")
+    create_repository(args.output_root / "popugvpocket-game-template", "game")
+    print(args.output_root / "popugvpocket-app-template")
+    print(args.output_root / "popugvpocket-game-template")
     return 0
 
 

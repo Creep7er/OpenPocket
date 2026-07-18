@@ -12,7 +12,7 @@ Launch prepares the cartridge context:
 
 ```gdscript
 {
-  "id": "org.openpocket.snake",
+  "id": "org.popugonet.popugvpocket.snake",
   "version": "0.3.0-dev",
   "trust": "built_in",
   "capabilities": ["storage", "audio", "theme", "system_menu"]

@@ -1,6 +1,6 @@
 # Creating a Game
 
-OpenPocket MVP games are Godot scenes packaged with a `manifest.json`.
+PopugVPocket MVP games are Godot scenes packaged with a `manifest.json`.
 
 ## Minimal Layout
 
@@ -22,7 +22,7 @@ Required fields:
 - `version`: package version.
 - `type`: `game` for games.
 - `entry_scene`: scene path relative to the package folder.
-- `sdk_version`: OpenPocket SDK version.
+- `sdk_version`: PopugVPocket SDK version.
 - `author`: author name.
 
 ## Input

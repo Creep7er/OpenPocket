@@ -3,7 +3,7 @@ extends Control
 signal exit_to_library
 signal request_system_menu
 
-const PACKAGE_ID := "org.openpocket.notes"
+const PACKAGE_ID := "org.popugonet.popugvpocket.notes"
 const KEYBOARD := " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-!?"
 
 var notes: Array[String] = []

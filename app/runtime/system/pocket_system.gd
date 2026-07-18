@@ -5,7 +5,7 @@ signal notification(message: String)
 
 ## Broadcasts a small system notification.
 func notify(message: String) -> void:
-	print("[OpenPocket] " + message)
+	print("[" + BrandConfig.PRODUCT_NAME + "] " + message)
 	notification.emit(message)
 
 

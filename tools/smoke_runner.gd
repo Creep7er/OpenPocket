@@ -3,6 +3,7 @@ extends Control
 const SCENES: Array[String] = [
 	"res://app/main.tscn",
 	"res://packages/games/snake/main.tscn",
+	"res://packages/games/breakout/main.tscn",
 	"res://sdk/templates/game/main.tscn",
 ]
 
@@ -22,12 +23,12 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	_frames += 1
 	if _frames >= 3:
-		print("OpenPocket scene smoke test passed.")
+		print("PopugVPocket scene smoke test passed.")
 		get_tree().quit(0)
 
 
 func _check_autoloads() -> bool:
-	var required: Array[String] = ["PocketInput", "PocketRouter", "PocketStorage", "PocketFilePicker", "CartridgeManager", "PocketPackages", "PocketSystem", "PocketAudio", "CartridgeAudio", "PocketTheme", "StoreService"]
+	var required: Array[String] = ["BrandConfig", "PocketScreen", "ConsoleLayoutManager", "PocketInput", "PocketRouter", "PocketStorage", "PocketFilePicker", "LegacyBackupImporter", "CartridgeManager", "PocketPackages", "PocketSystem", "PocketAudio", "CartridgeAudio", "PocketTheme", "StoreService"]
 	for autoload_name in required:
 		if not Engine.has_singleton(autoload_name) and get_node_or_null("/root/" + autoload_name) == null:
 			push_error("Missing autoload: " + autoload_name)

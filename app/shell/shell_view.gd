@@ -27,7 +27,9 @@ var pending_manage_manifest: Dictionary = {}
 var search_query := ""
 var search_char_index := 1
 var last_result := ""
-var _title := "OPENPOCKET"
+var pending_legacy_path := ""
+var _picker_purpose := "cartridge"
+var _title := "POPUGVPOCKET"
 var _intro := ""
 var preview_theme_id := ""
 
@@ -98,7 +100,7 @@ func show_home() -> void:
 		{"label": "Settings", "action": "settings"},
 		{"label": "About", "action": "about"},
 	]
-	_render("OPENPOCKET", "")
+	_render(BrandConfig.PRODUCT_NAME.to_upper(), "")
 
 
 func show_library(package_list: Array[Dictionary]) -> void:
@@ -136,9 +138,14 @@ func show_settings() -> void:
 	screen = "settings"
 	selected_index = 0
 	items = []
-	setting_keys = ["sound_enabled", "volume", "customize", "scanlines", "keyboard_hints", "developer_mode", "reset"]
+	setting_keys = ["console_profile", "direction_control", "stick_mode", "sound_enabled", "volume", "customize", "scanlines", "keyboard_hints", "developer_mode", "reset"]
+	if String(PocketStorage.get_setting("direction_control", "dpad")) == "stick":
+		setting_keys.insert(3, "stick_size")
+		setting_keys.insert(4, "stick_deadzone")
+		setting_keys.insert(5, "stick_side")
 	if bool(PocketStorage.get_setting("developer_mode", false)):
 		setting_keys.insert(setting_keys.size() - 1, "debug_info")
+		setting_keys.insert(setting_keys.size() - 1, "legacy_import")
 	for key in setting_keys:
 		items.append({"label": key, "action": "customize" if key == "customize" else "setting", "key": key})
 	_render("SETTINGS", "LEFT RIGHT EDIT")
@@ -150,7 +157,7 @@ func show_about() -> void:
 	screen = "about"
 	selected_index = 0
 	items = [{"label": "Back", "action": "back"}]
-	_render("ABOUT", "OPENPOCKET 0.4.0\nSDK 0.4.0 EXPERIMENTAL\nCATALOG + LOCAL ACHIEVEMENTS\nNO CODE SANDBOX")
+	_render("ABOUT", BrandConfig.PRODUCT_NAME.to_upper() + "\nVERSION " + BrandConfig.VERSION + "\nA PIXEL HANDHELD PLATFORM\nBY POPUGONET\nREBORN FROM OPENPOCKET")
 
 
 func set_input_enabled(value: bool) -> void:
@@ -182,7 +189,7 @@ func _restore_state(state: Dictionary) -> void:
 	for item in Array(state.get("items", [])):
 		items.append(Dictionary(item))
 	selected_index = int(state.get("selected", 0))
-	_title = String(state.get("title", "OPENPOCKET"))
+	_title = String(state.get("title", BrandConfig.PRODUCT_NAME.to_upper()))
 	_intro = String(state.get("intro", ""))
 	packages.clear()
 	for package in Array(state.get("packages", [])):
@@ -208,6 +215,12 @@ func _item_text(item: Dictionary) -> String:
 		return "VOLUME    [" + "#".repeat(blocks) + "-".repeat(5 - blocks) + "]"
 	if key == "sound_enabled":
 		return "SOUND     [" + ("ON" if bool(PocketStorage.get_setting("sound_enabled", true)) else "OFF") + "]"
+	if key == "console_profile": return "PROFILE   [" + String(PocketStorage.get_setting("console_profile", "vboy")).to_upper() + "]"
+	if key == "direction_control": return "CONTROL   [" + String(PocketStorage.get_setting("direction_control", "dpad")).to_upper() + "]"
+	if key == "stick_mode": return "STICK     [" + String(PocketStorage.get_setting("stick_mode", "fixed")).to_upper() + "]"
+	if key == "stick_size": return "SIZE      [" + str(snappedf(float(PocketStorage.get_setting("stick_size", 1.0)), 0.1)) + "]"
+	if key == "stick_deadzone": return "DEADZONE  [" + str(int(float(PocketStorage.get_setting("stick_deadzone", 0.28)) * 100.0)) + "%]"
+	if key == "stick_side": return "SIDE      [" + String(PocketStorage.get_setting("stick_side", "left")).to_upper() + "]"
 	if key == "theme":
 		return "THEME     [" + PocketTheme.theme_label() + "]"
 	if key == "customize": return "CUSTOMIZE  >"
@@ -219,6 +232,7 @@ func _item_text(item: Dictionary) -> String:
 		return "DEBUG INFO[" + ("ON" if bool(PocketStorage.get_setting("debug_info", false)) else "OFF") + "]"
 	if key == "developer_mode":
 		return "DEV MODE  [" + ("ON" if bool(PocketStorage.get_setting("developer_mode", false)) else "OFF") + "]"
+	if key == "legacy_import": return "IMPORT LEGACY BACKUP >"
 	return "RESET UI SETTINGS"
 
 
@@ -264,6 +278,12 @@ func _activate_selected() -> void:
 			_install_from_store(Dictionary(item.get("store_item", {})))
 		"install":
 			_start_file_picker()
+		"legacy_import":
+			_start_legacy_picker()
+		"legacy_all":
+			_import_legacy(false)
+		"legacy_settings":
+			_import_legacy(true)
 		"install_file":
 			_prepare_external_install(String(item.get("path", "")))
 		"confirm_install":
@@ -337,6 +357,8 @@ func _activate_setting(key: String) -> void:
 		_render(_title, _intro_for_screen())
 	elif key == "developer_mode" and not bool(PocketStorage.get_setting("developer_mode", false)):
 		_show_developer_warning()
+	elif key == "legacy_import":
+		_start_legacy_picker()
 	else:
 		_adjust_setting(1)
 
@@ -351,6 +373,18 @@ func _adjust_setting(delta: int) -> void:
 		return
 	var key := String(items[selected_index].get("key", ""))
 	match key:
+		"console_profile":
+			ConsoleLayoutManager.cycle_profile()
+		"direction_control":
+			PocketStorage.set_setting("direction_control", "stick" if String(PocketStorage.get_setting("direction_control", "dpad")) == "dpad" else "dpad")
+		"stick_mode":
+			PocketStorage.set_setting("stick_mode", "floating" if String(PocketStorage.get_setting("stick_mode", "fixed")) == "fixed" else "fixed")
+		"stick_size":
+			PocketStorage.set_setting("stick_size", clampf(float(PocketStorage.get_setting("stick_size", 1.0)) + delta * 0.1, 0.8, 1.3))
+		"stick_deadzone":
+			PocketStorage.set_setting("stick_deadzone", clampf(float(PocketStorage.get_setting("stick_deadzone", 0.28)) + delta * 0.05, 0.15, 0.55))
+		"stick_side":
+			PocketStorage.set_setting("stick_side", "right" if String(PocketStorage.get_setting("stick_side", "left")) == "left" else "left")
 		"volume":
 			var volume: int = clampi(int(PocketStorage.get_setting("volume", 80)) + delta * 20, 0, 100)
 			PocketStorage.set_setting("volume", volume)
@@ -565,6 +599,7 @@ func _on_store_download_ready(download: Dictionary) -> void:
 
 
 func _start_file_picker() -> void:
+	_picker_purpose = "cartridge"
 	_push_state()
 	screen = "install_selecting"
 	selected_index = 0
@@ -574,20 +609,57 @@ func _start_file_picker() -> void:
 	PocketFilePicker.open_cartridge_file()
 
 
+func _start_legacy_picker() -> void:
+	_picker_purpose = "legacy"
+	_push_state()
+	screen = "legacy_selecting"
+	items = []
+	_render("LEGACY OPENPOCKET BACKUP", "SELECTING FILE...")
+	PocketFilePicker.reset()
+	PocketFilePicker.open_legacy_backup()
+
+
 func _on_picker_state_changed(next_state: String, detail: String) -> void:
 	if next_state in ["selecting", "copying", "inspecting"]:
-		screen = "install_" + next_state
+		screen = ("legacy_" if _picker_purpose == "legacy" else "install_") + next_state
 		items = []
 		_render("INSTALL CARTRIDGE", detail + "...")
 
 
 func _on_picker_file_selected(path: String) -> void:
-	_prepare_external_install(path)
+	if _picker_purpose == "legacy":
+		_prepare_legacy_import(path)
+	else:
+		_prepare_external_install(path)
 
 
 func _on_picker_cancelled() -> void:
-	if screen.begins_with("install_"):
+	if screen.begins_with("install_") or screen.begins_with("legacy_"):
 		_back()
+
+
+func _prepare_legacy_import(path: String) -> void:
+	var checked: Dictionary = LegacyBackupImporter.inspect(path)
+	if not bool(checked.get("ok", false)):
+		_show_result("INVALID LEGACY BACKUP", String(checked.get("error", "invalid")).to_upper(), false)
+		return
+	pending_legacy_path = path
+	screen = "legacy_confirm"
+	selected_index = 0
+	items = [
+		{"label": "Import Everything", "action": "legacy_all"},
+		{"label": "Import Settings Only", "action": "legacy_settings"},
+		{"label": "Cancel", "action": "cancel"},
+	]
+	_render("LEGACY OPENPOCKET BACKUP", "SAFE DATA ONLY\nEXECUTABLE CONTENT IS SKIPPED")
+
+
+func _import_legacy(settings_only: bool) -> void:
+	var result: Dictionary = LegacyBackupImporter.import_backup(pending_legacy_path, settings_only)
+	if bool(result.get("ok", false)):
+		_show_result("LEGACY IMPORT", "COMPLETE\nRESTART RECOMMENDED", true)
+	else:
+		_show_result("LEGACY IMPORT FAILED", String(result.get("error", "failed")).to_upper(), false)
 
 
 func _on_picker_failed(code: String, _message: String) -> void:
@@ -665,7 +737,7 @@ func _show_installed(record: Dictionary, restart_required: bool) -> void:
 	items.append({"label": "Library", "action": "library"})
 	var body := String(record.get("name", "CARTRIDGE")).to_upper()
 	if restart_required:
-		body += "\nRESTART OPENPOCKET TO APPLY UPDATE"
+		body += "\nRESTART %s TO APPLY UPDATE" % BrandConfig.product_name.to_upper()
 	_render("INSTALLED", body)
 
 
@@ -781,18 +853,19 @@ func _intro_for_screen() -> String:
 		"settings":
 			return "LEFT RIGHT EDIT"
 		"about":
-			return "OPENPOCKET 0.4.0\nSDK 0.4.0 EXPERIMENTAL\nCARTRIDGE FORMAT 1\nNO CODE SANDBOX"
+			return BrandConfig.PRODUCT_NAME.to_upper() + " " + BrandConfig.VERSION + "\nSDK 0.5.0 EXPERIMENTAL\nCARTRIDGE FORMAT 2\nNO CODE SANDBOX"
 	return _intro
 
 
 func _draw_boot(p: Dictionary) -> void:
 	var progress: int = clampi(int(boot_time / 1.15 * 10.0), 0, 10)
 	var bar := "[" + "#".repeat(progress) + "-".repeat(10 - progress) + "]"
-	PixelFont.draw_text(self, Vector2(42, 74), "OPENPOCKET", p["hi"], 3)
-	PixelFont.draw_text(self, Vector2(82, 126), "BOOTING", p["light"], 2)
-	PixelFont.draw_text(self, Vector2(58, 158), bar, p["hi"], 2)
+	draw_texture_rect(BrandAssets.MASCOT_BOOT, Rect2(Vector2(158, 34), Vector2(84, 84)), false)
+	PixelFont.draw_text(self, Vector2(52, 122), BrandConfig.PRODUCT_NAME.to_upper(), p["hi"], 2)
+	PixelFont.draw_text(self, Vector2(126, 158), "REBORN", p["light"], 2)
+	PixelFont.draw_text(self, Vector2(58, 190), bar, p["hi"], 2)
 	if progress >= 9:
-		PixelFont.draw_text(self, Vector2(70, 192), "SYSTEM READY", p["hi"], 2)
+		PixelFont.draw_text(self, Vector2(70, 222), "SYSTEM READY", p["hi"], 2)
 
 
 func _draw_screen_body(p: Dictionary) -> void:

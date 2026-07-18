@@ -1,6 +1,6 @@
-# Creating an OpenPocket App
+# Creating an PopugVPocket App
 
-OpenPocket apps are Control scenes that run inside the 400x320 virtual screen.
+PopugVPocket apps are Control scenes that run inside the 400x320 virtual screen.
 They must be fully controllable with `PocketInput`; Android system keyboard input
 cannot be the only input path.
 

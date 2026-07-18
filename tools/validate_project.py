@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the OpenPocket MVP repository structure."""
+"""Validate the PopugVPocket MVP repository structure."""
 
 from __future__ import annotations
 
@@ -29,6 +29,10 @@ REQUIRED_FILES = [
     "app/runtime/cartridges/cartridge_installer.gd",
     "app/runtime/cartridges/cartridge_loader.gd",
     "app/runtime/files/pocket_file_picker.gd",
+    "app/runtime/migration/legacy_backup_importer.gd",
+    "app/runtime/branding/brand_config.gd",
+    "app/runtime/layout/console_layout_manager.gd",
+    "app/runtime/screen/pocket_screen.gd",
     "app/runtime/store/store_service.gd",
     "app/runtime/store/local_store_provider.gd",
     "app/runtime/storage/pocket_storage.gd",
@@ -96,15 +100,20 @@ REQUIRED_FILES = [
     "tools/test_cartridge_format.py",
     "tools/test_install_flow.py",
     "store/mock_catalog.json",
-    "android/plugins/openpocket_file_picker/plugin/src/main/java/org/openpocket/filepicker/OpenPocketFilePicker.kt",
+    "android/plugins/popugvpocket_file_picker/plugin/src/main/java/org/popugonet/popugvpocket/filepicker/PopugVPocketFilePicker.kt",
     "docs/android-build.md",
+    "docs/branding.md",
+    "docs/layout-profiles.md",
+    "docs/controls.md",
+    "docs/reborn-migration.md",
+    "docs/releases/0.5.0.md",
     "SECURITY.md",
     "ROADMAP.md",
     "CHANGELOG.md",
     "THIRD_PARTY.md",
     "docs/README.ru.md",
     "docs/releases/0.3.2.md",
-    "docs/screenshots/openpocket-hero.png",
+    "docs/screenshots/popugvpocket-hero.png",
     ".github/workflows/android-compact.yml",
 ]
 
@@ -224,8 +233,8 @@ def validate_cartridge_manifest(cartridge_path: Path, package_manifest: dict) ->
     missing = [key for key in CARTRIDGE_REQUIRED if key not in cartridge]
     if missing:
         fail(f"{cartridge_path.relative_to(ROOT)} misses fields: {', '.join(missing)}")
-    if cartridge.get("format_version") != 1:
-        fail(f"{cartridge_path.relative_to(ROOT)} must use format_version 1")
+    if cartridge.get("format_version") != 2:
+        fail(f"{cartridge_path.relative_to(ROOT)} must use PopugVPocket format_version 2")
     if cartridge.get("id") != package_manifest.get("id"):
         fail(f"Cartridge id does not match package manifest: {cartridge_path.relative_to(ROOT)}")
     if cartridge.get("type") not in {"game", "app", "theme"}:
@@ -273,7 +282,7 @@ def main() -> int:
     validate_manifests()
     validate_external_sources()
     validate_package_boundaries()
-    print("OpenPocket validation passed.")
+    print("PopugVPocket validation passed.")
     return 0
 
 

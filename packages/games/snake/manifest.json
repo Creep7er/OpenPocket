@@ -1,12 +1,12 @@
 {
-  "id": "org.openpocket.snake",
+  "id": "org.popugonet.popugvpocket.snake",
   "name": "Snake",
-  "version": "0.3.0-dev",
+  "version": "0.5.0",
   "type": "game",
   "entry_scene": "main.tscn",
-  "sdk_version": "0.3.0",
-  "author": "OpenPocket Contributors",
-  "description": "Classic Snake for OpenPocket.",
+  "sdk_version": "0.5.0",
+  "author": "PopugVPocket Contributors",
+  "description": "Classic Snake for PopugVPocket.",
   "category": "arcade",
   "license": "MIT",
   "capabilities": ["storage", "audio", "theme", "system_menu"]

@@ -2,7 +2,7 @@
 
 Trust levels:
 
-- `built_in`: shipped with OpenPocket.
+- `built_in`: shipped with PopugVPocket.
 - `trusted`: curated local source, checksum verified.
 - `untrusted`: manually imported file.
 - `blocked`: cannot launch.

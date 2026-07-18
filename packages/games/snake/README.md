@@ -1,6 +1,6 @@
 # Snake
 
-Classic Snake for OpenPocket.
+Classic Snake for PopugVPocket.
 
 ## Controls
 
@@ -27,7 +27,7 @@ Settings apply to the next game.
 
 ## Storage Keys
 
-Settings use `PocketStorage.get_package_setting("org.openpocket.snake", key, default)`.
+Settings use `PocketStorage.get_package_setting("org.popugonet.popugvpocket.snake", key, default)`.
 
 Data keys:
 

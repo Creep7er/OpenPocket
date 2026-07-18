@@ -1,6 +1,6 @@
 extends RefCounted
 
-const FORMAT_VERSION := 1
+const FORMAT_VERSION := 2
 const SUPPORTED_TYPES := ["game", "app", "theme"]
 const RUNTIME_TYPES := ["game", "app"]
 const SUPPORTED_CAPABILITIES := ["storage", "audio", "theme", "system_menu"]
@@ -105,18 +105,18 @@ static func _is_valid_id(cartridge_id: String) -> bool:
 static func from_package_manifest(package_manifest: Dictionary, base_path: String) -> Dictionary:
 	var package_id := String(package_manifest.get("id", ""))
 	var entry_scene := String(package_manifest.get("entry_scene", "main.tscn"))
-	var author_name := String(package_manifest.get("author", "OpenPocket Contributors"))
+	var author_name := String(package_manifest.get("author", "Popugonet Contributors"))
 	return {
 		"format_version": FORMAT_VERSION,
 		"id": package_id,
 		"name": String(package_manifest.get("name", package_id)),
-		"version": String(package_manifest.get("version", "0.3.0-dev")),
+		"version": String(package_manifest.get("version", "0.5.0-dev")),
 		"type": String(package_manifest.get("type", "game")),
 		"entry_scene": base_path.path_join(entry_scene),
-		"sdk_version": String(package_manifest.get("sdk_version", "0.3.0")),
-		"runtime": {"min_version": "0.3.0", "max_version": null},
+		"sdk_version": String(package_manifest.get("sdk_version", "0.5.0")),
+		"runtime": {"min_version": "0.5.0", "max_version": null},
 		"author": {"name": author_name, "url": ""},
-		"description": String(package_manifest.get("description", "OpenPocket cartridge.")),
+		"description": String(package_manifest.get("description", "PopugVPocket cartridge.")),
 		"category": String(package_manifest.get("category", "misc")),
 		"icon": String(package_manifest.get("icon", "icon.png")),
 		"license": String(package_manifest.get("license", "MIT")),

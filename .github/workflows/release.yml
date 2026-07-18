@@ -108,7 +108,14 @@ jobs:
           unzip -q templates.tpz -d template-extract
           cp -R template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
           python tools/configure_ci_android.py
-          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --editor --quit --path . --install-android-build-template
+          set +e
+          timeout 180s "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --editor --quit --path . --install-android-build-template
+          install_status=$?
+          set -e
+          if [[ $install_status -ne 0 && $install_status -ne 124 ]]; then
+            exit "$install_status"
+          fi
+          test -f android/build/build.gradle
       - name: Essential checks
         run: |
           python tools/validate_project.py

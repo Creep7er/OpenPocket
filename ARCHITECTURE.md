@@ -1,6 +1,6 @@
 # PopugVPocket Architecture
 
-PopugVPocket 0.5.0 separates profile-driven handheld hardware, pixel-perfect content, runtime services, trusted built-ins, a moderated static catalog, local profile data, and the experimental external cartridge pipeline.
+PopugVPocket 0.5.1 separates profile-driven handheld hardware, pixel-perfect content, runtime services, trusted built-ins, a moderated static catalog, local profile data, and the experimental external cartridge pipeline.
 
 ```mermaid
 flowchart TD
@@ -30,7 +30,7 @@ flowchart TD
 
 `app/ui/console_frame.gd` fills the available window, applies Android safe-area margins, and lays out the physical controls responsively. Shell and cartridge scenes render into a separate 400x320 `SubViewport` using nearest-neighbor filtering. Integer scaling is limited to the virtual display rather than the whole phone layout.
 
-`ConsoleLayoutManager` selects VBoy portrait or VGirl landscape and persists the choice. VBoy stacks the display above its lower controls; VGirl uses independent left-direction, center-display, and right-action zones with MENU/BACK below the display. `PocketScreen` owns the invariant 400x320 logical display. Physical controls map through `PocketInput`, so cartridges never know the active profile or whether directions came from a D-pad, fixed stick, or floating stick.
+`ConsoleLayoutManager` selects VBoy portrait or VGirl landscape and persists the choice. VBoy stacks the display above its lower controls; VGirl uses independent left-direction, center-display, and right-action zones with MENU/BACK below the display. `ActionClusterLayout` chooses a non-overlapping compact or diamond XYAB arrangement from the available thumb zone. Shell geometry, PocketScreen display scale, and logical text size are measured independently. `PocketScreen` owns the invariant 400x320 logical display. Physical controls map through `PocketInput`, so cartridges never know the active profile or whether directions came from a D-pad, fixed stick, or floating stick.
 
 ## Runtime Services
 
@@ -43,7 +43,8 @@ flowchart TD
 - `PocketRouter`: Shell route and system-menu requests.
 - `CartridgeManager`: built-in bootstrap, external registry, verification, mounting, launch preparation, and removal.
 - `PocketFilePicker`: desktop file dialog plus Android SAF bridge, both producing an app-owned staging file.
-- `StoreService`: filtering, semantic version comparison, and download handoff through a provider.
+- `StoreService`: filtering, semantic version comparison, catalog lookup, and download/install lifecycle coordination.
+- `StoreDownloadManager`: one active HTTPS job with progress, cancellation, bounded redirects and size, `.part` staging, SHA-256 verification, and atomic completion.
 - `PocketPackages`: compatibility adapter over `CartridgeManager`; retained for older Shell/runtime call sites and considered deprecated for new cartridge code.
 
 ## Built-In And External Cartridges
@@ -62,7 +63,7 @@ Library launch prepares a package through `CartridgeManager`, opens a `Cartridge
 
 ## Store Provider
 
-PopugVPocket 0.5.0 uses `GitHubCatalogProvider` with catalog schema v2, approved-only entries, ETag/Last-Modified revalidation, request limits, and last-successful cache. `LocalStoreProvider` remains a development fixture. Downloaded release assets are checked against catalog SHA-256 before installer validation. Android INTERNET is used only for catalog and asset GET requests.
+PopugVPocket 0.5.1 uses `GitHubCatalogProvider` with catalog schema v2, approved-only entries, ETag/Last-Modified revalidation, request limits, and last-successful cache. `LocalStoreProvider` remains a development fixture. `StoreDownloadManager` verifies release assets before installer validation and preserves broken registry entries for repair. Android INTERNET is used only for catalog and asset GET requests.
 
 ## Achievements And Cosmetics
 
@@ -76,7 +77,7 @@ The PopugVPocket Android plugin invokes Storage Access Framework. The user selec
 
 Built-ins are trusted because they ship with the source and application. External GDScript executes in the PopugVPocket process and is not sandboxed. Developer Mode is an explicit risk gate, not isolation. Checksums validate expected bytes, not publisher identity. Capability declarations are not a process-level permission boundary.
 
-Future work may add signed manifests, trust roots, permissions, storage quotas, and an isolated scripting runtime such as constrained Lua or WebAssembly. None of those controls are implemented in 0.5.0.
+Future work may add signed manifests, trust roots, permissions, storage quotas, and an isolated scripting runtime such as constrained Lua or WebAssembly. None of those controls are implemented in 0.5.1.
 
 ## Compatibility Reset
 

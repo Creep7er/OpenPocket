@@ -1,6 +1,6 @@
 # Security Policy
 
-PopugVPocket 0.5.0 supports trusted built-in cartridges and experimental external cartridge installation. It is not a sandboxed third-party code platform.
+PopugVPocket 0.5.1 supports trusted built-in cartridges and experimental external cartridge installation. It is not a sandboxed third-party code platform.
 
 ## External Code Warning
 
@@ -19,6 +19,8 @@ The Android picker uses Storage Access Framework to let the user choose one file
 
 Android INTERNET permission is enabled for HTTPS GET requests to the public GitHub catalog and cartridge release assets. PopugVPocket does not send analytics, device identifiers, achievement data, rewards, or the installed cartridge list. Cleartext HTTP is rejected.
 
+Store accepts configured GitHub HTTPS hosts, limits redirects and file size, downloads to a temporary `.part` file, verifies the catalog SHA-256, then atomically promotes the file before installer inspection. These controls detect wrong bytes and common download failures; they do not make GDScript safe. Catalog review is not a security guarantee.
+
 ## Local Data
 
 Shell settings, package-scoped data, achievements, and rewards are stored locally through Godot `user://`. Achievements can be modified by a device owner and are not an anti-cheat system. Permanent rewards are intentionally separate from cartridge save removal.
@@ -28,7 +30,8 @@ Shell settings, package-scoped data, achievements, and rewards are stored locall
 - PCK resources cannot be reliably unloaded at runtime; replacing a mounted cartridge may require restart.
 - Capability declarations are metadata and validation input, not an enforced process sandbox.
 - `CartridgeAudio` owns supported cartridge sounds, but unsandboxed code can still call `AudioServer` directly.
-- Production Android signing is not configured in the repository.
+- Production Android signing requires GitHub secrets. Debug-prerelease APKs are not production signed.
+- Application updates may be distributed through GitHub Releases, but the app does not automatically download or install APKs and does not request `REQUEST_INSTALL_PACKAGES`.
 
 ## Reporting A Vulnerability
 

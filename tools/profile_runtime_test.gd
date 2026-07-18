@@ -15,7 +15,7 @@ func _ready() -> void:
 	_assert(AchievementManager.process_event(cartridge, "tick", 1.0).is_empty(), "achievement unlocked twice")
 	var vault := Vault.new()
 	vault.load_data()
-	var reward_source := {"id":test_id,"version":"0.5.0","_base_path":"res://tools/test_data"}
+	var reward_source := {"id":test_id,"version":"0.5.1","_base_path":"res://tools/test_data"}
 	var reward := {"id":"test_reward","type":"theme","name":"Test Reward","definition":"reward_theme.json","permanent":true}
 	var first_unlock := vault.unlock(reward_source, reward)
 	var second_unlock := vault.unlock(reward_source, reward)
@@ -27,7 +27,7 @@ func _ready() -> void:
 	_assert(String(provider.call("_parse_catalog", duplicate_catalog).get("error", "")) == "duplicate_id", "duplicate catalog id accepted")
 	provider.free()
 	if not _failed:
-		print("PopugVPocket 0.5 profile runtime test passed")
+		print("PopugVPocket 0.5.1 profile runtime test passed")
 	get_tree().quit(1 if _failed else 0)
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a clean PopugVPocket public source snapshot."""
+"""Validate the PopugVPocket public source tree and publication assets."""
 
 from __future__ import annotations
 
@@ -28,18 +28,24 @@ REQUIRED_FILES = {
 }
 REQUIRED_DIRECTORIES = {".github", ".codex", "android", "app", "cartridges", "docs", "packages", "sdk", "store", "tools"}
 REQUIRED_SCREENSHOTS = {
-    "home.png",
-    "library.png",
-    "store.png",
+    "vboy-home.png",
+    "vboy-library.png",
+    "vboy-store.png",
+    "vboy-install.png",
+    "vgirl-home.png",
+    "vgirl-store.png",
+    "vgirl-settings.png",
+    "vgirl-controls.png",
     "snake.png",
     "pong.png",
     "breakout.png",
     "notes.png",
-    "install-cartridge.png",
-    "cartridge-details.png",
-    "popugvpocket-hero.png",
+    "achievement-unlocked.png",
+    "customize-themes.png",
+    "store-download.png",
+    "popugvpocket-0.5.1-hero.png",
 }
-FORBIDDEN_DIRECTORY_NAMES = {".git", ".godot", ".tools", ".tmp", ".cache", "exports", "dist", "publication", "__pycache__"}
+FORBIDDEN_DIRECTORY_NAMES = {".git", ".godot", ".tools", ".tmp", ".cache", "build", "exports", "dist", "publication", "__pycache__"}
 FORBIDDEN_SUFFIXES = {".apk", ".aab", ".jks", ".keystore", ".p12", ".pfx", ".pem", ".pyc"}
 TEXT_SUFFIXES = {".gd", ".tscn", ".tres", ".json", ".md", ".py", ".ps1", ".yml", ".yaml", ".cfg", ".txt", ".kt", ".kts", ".xml", ".gradle"}
 SECRET_PATTERNS = {
@@ -56,8 +62,12 @@ def fail(errors: list[str], message: str) -> None:
     errors.append(message)
 
 
+def is_generated(path: Path, root: Path) -> bool:
+    return any(part in FORBIDDEN_DIRECTORY_NAMES for part in path.relative_to(root).parts)
+
+
 def text_files(root: Path) -> list[Path]:
-    return [path for path in root.rglob("*") if path.is_file() and (path.suffix.lower() in TEXT_SUFFIXES or path.name in {"LICENSE", ".gitignore"})]
+    return [path for path in root.rglob("*") if path.is_file() and not is_generated(path, root) and (path.suffix.lower() in TEXT_SUFFIXES or path.name in {"LICENSE", ".gitignore"})]
 
 
 def validate_tree(root: Path, errors: list[str]) -> None:
@@ -70,8 +80,8 @@ def validate_tree(root: Path, errors: list[str]) -> None:
 
     for path in root.rglob("*"):
         relative = path.relative_to(root).as_posix()
-        if path.is_dir() and path.name in FORBIDDEN_DIRECTORY_NAMES:
-            fail(errors, f"Forbidden directory: {relative}/")
+        if is_generated(path, root):
+            continue
         if path.is_file() and path.suffix.lower() in FORBIDDEN_SUFFIXES:
             fail(errors, f"Forbidden binary or credential: {relative}")
         if path.name == ".publication-notes.md":
@@ -101,6 +111,8 @@ def validate_text(root: Path, errors: list[str]) -> None:
 
 def validate_json(root: Path, errors: list[str]) -> None:
     for path in root.rglob("*.json"):
+        if is_generated(path, root):
+            continue
         try:
             json.loads(path.read_text(encoding="utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -109,6 +121,8 @@ def validate_json(root: Path, errors: list[str]) -> None:
 
 def validate_links(root: Path, errors: list[str]) -> None:
     for path in root.rglob("*.md"):
+        if is_generated(path, root):
+            continue
         content = path.read_text(encoding="utf-8")
         for raw_target in MARKDOWN_LINK.findall(content):
             target = raw_target.strip().strip("<>").split()[0]
@@ -130,13 +144,10 @@ def validate_links(root: Path, errors: list[str]) -> None:
 def validate_version_and_screenshots(root: Path, errors: list[str]) -> None:
     project = (root / "project.godot").read_text(encoding="utf-8") if (root / "project.godot").exists() else ""
     presets = (root / "export_presets.cfg").read_text(encoding="utf-8") if (root / "export_presets.cfg").exists() else ""
-    readme = (root / "README.md").read_text(encoding="utf-8") if (root / "README.md").exists() else ""
-    if 'config/version="0.3.2"' not in project:
-        fail(errors, "project.godot does not declare version 0.3.2")
-    if 'version/name="0.3.2"' not in presets or "version/code=5" not in presets:
-        fail(errors, "Android versionName 0.3.2 / versionCode 5 is missing")
-    if "first public source snapshot" not in readme.lower():
-        fail(errors, "README does not identify 0.3.2 as the first public source snapshot")
+    if 'config/version="0.5.1"' not in project:
+        fail(errors, "project.godot does not declare version 0.5.1")
+    if 'version/name="0.5.1"' not in presets or "version/code=7" not in presets:
+        fail(errors, "Android versionName 0.5.1 / versionCode 7 is missing")
     screenshot_root = root / "docs" / "screenshots"
     found = {path.name for path in screenshot_root.glob("*.png")} if screenshot_root.exists() else set()
     for missing in sorted(REQUIRED_SCREENSHOTS - found):
@@ -151,14 +162,19 @@ def validate_version_and_screenshots(root: Path, errors: list[str]) -> None:
             fail(errors, f"Invalid PNG screenshot: {path.relative_to(root)}")
             continue
         width, height = struct.unpack(">II", header[16:24])
-        expected = (1235, 884) if path.name == "popugvpocket-hero.png" else (393, 852)
+        if path.name == "popugvpocket-0.5.1-hero.png":
+            expected = (1289, 884)
+        elif path.name.startswith("vgirl-") or path.name in {"controls-fixed-stick.png", "controls-floating-stick.png"}:
+            expected = (852, 393)
+        else:
+            expected = (393, 852)
         if (width, height) != expected:
             fail(errors, f"Unexpected screenshot size {width}x{height}: {path.relative_to(root)}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("path", nargs="?", default="publication/popugvpocket-0.3.2")
+    parser.add_argument("path", nargs="?", default=".")
     args = parser.parse_args()
     root = Path(args.path).resolve()
     if not root.is_dir():
@@ -177,7 +193,7 @@ def main() -> int:
         print(f"Publication validation failed with {len(errors)} error(s).")
         return 1
 
-    files = [path for path in root.rglob("*") if path.is_file()]
+    files = [path for path in root.rglob("*") if path.is_file() and not is_generated(path, root)]
     size = sum(path.stat().st_size for path in files)
     print(f"[OK] Publication snapshot valid: {root}")
     print(f"[OK] Files: {len(files)}")

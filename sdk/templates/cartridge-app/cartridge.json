@@ -5,9 +5,9 @@
   "version": "0.1.0",
   "type": "app",
   "entry_scene": "res://cartridges/org.example.app/main.tscn",
-  "sdk_version": "0.5.0",
+  "sdk_version": "0.5.1",
   "runtime": {
-    "min_version": "0.5.0",
+    "min_version": "0.5.1",
     "max_version": null
   },
   "author": {

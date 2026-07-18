@@ -1,5 +1,5 @@
 param(
-    [string]$Apk = "exports/android/popugvpocket-0.5.0-compact-debug.apk",
+    [string]$Apk = "exports/android/popugvpocket-0.5.1-compact-debug.apk",
     [string]$Adb = ""
 )
 

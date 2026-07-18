@@ -1,10 +1,10 @@
 {
   "id": "org.popugonet.popugvpocket.notes",
   "name": "Pocket Notes",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "app",
   "entry_scene": "main.tscn",
-  "sdk_version": "0.5.0",
+  "sdk_version": "0.5.1",
   "author": "PopugVPocket Contributors",
   "description": "Short local notes with a pixel keyboard.",
   "category": "productivity",

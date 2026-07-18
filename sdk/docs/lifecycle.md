@@ -19,4 +19,4 @@ Android Back is handled by the runtime:
 4. On Home, ask for exit confirmation.
 5. Quit only after confirmation.
 
-API `0.5.0` is experimental and may change before a stable release.
+API `0.5.1` is experimental and may change before a stable release.

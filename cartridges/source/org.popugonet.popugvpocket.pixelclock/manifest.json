@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "app",
   "entry_scene": "main.tscn",
-  "sdk_version": "0.5.0",
+  "sdk_version": "0.5.1",
   "author": "PopugVPocket Examples",
   "description": "Clock, stopwatch, and timer.",
   "category": "utility",

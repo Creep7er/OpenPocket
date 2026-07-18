@@ -2,12 +2,12 @@
   "format_version": 2,
   "id": "org.popugonet.popugvpocket.notes",
   "name": "Pocket Notes",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "app",
   "entry_scene": "res://packages/apps/notes/main.tscn",
-  "sdk_version": "0.5.0",
+  "sdk_version": "0.5.1",
   "runtime": {
-    "min_version": "0.5.0",
+    "min_version": "0.5.1",
     "max_version": null
   },
   "author": {

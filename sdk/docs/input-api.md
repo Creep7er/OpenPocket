@@ -1,6 +1,6 @@
 # PocketInput API
 
-`PocketInput` is the experimental input surface for cartridges in API `0.5.0`.
+`PocketInput` is the experimental input surface for cartridges in API `0.5.1`.
 
 Buttons:
 

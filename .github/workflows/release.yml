@@ -41,6 +41,7 @@ jobs:
     timeout-minutes: 55
     env:
       GODOT_VERSION: 4.7-stable
+      GODOT_BIN: /tmp/popugvpocket-godot/Godot_v4.7-stable_linux.x86_64
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
       ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
       XDG_CONFIG_HOME: /tmp/popugvpocket-godot-config
@@ -101,12 +102,13 @@ jobs:
           keytool -genkeypair -v -keystore "$GODOT_ANDROID_KEYSTORE_DEBUG_PATH" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
       - name: Install Godot and templates
         run: |
-          curl --fail --location --output godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
-          unzip -q godot.zip
-          chmod +x "Godot_v${GODOT_VERSION}_linux.x86_64"
-          curl --fail --location --output templates.tpz "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz"
+          mkdir -p /tmp/popugvpocket-godot
+          curl --fail --location --output /tmp/popugvpocket-godot/godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q /tmp/popugvpocket-godot/godot.zip -d /tmp/popugvpocket-godot
+          chmod +x "$GODOT_BIN"
+          curl --fail --location --output /tmp/popugvpocket-godot/templates.tpz "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz"
           mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
-          unzip -q templates.tpz -d /tmp/popugvpocket-template-extract
+          unzip -q /tmp/popugvpocket-godot/templates.tpz -d /tmp/popugvpocket-template-extract
           cp -R /tmp/popugvpocket-template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
           python tools/configure_ci_android.py
           mkdir -p android/build
@@ -118,9 +120,9 @@ jobs:
         run: |
           python tools/validate_project.py
           python tools/test_install_flow.py
-          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --editor --path . --quit
-          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . res://tools/smoke_runner.tscn
-          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . res://tools/vgirl_layout_audit.tscn
+          "$GODOT_BIN" --headless --editor --path . --quit
+          "$GODOT_BIN" --headless --path . res://tools/smoke_runner.tscn
+          "$GODOT_BIN" --headless --path . res://tools/vgirl_layout_audit.tscn
       - name: Build Android artifacts
         shell: bash
         run: |
@@ -144,11 +146,11 @@ jobs:
           mkdir -p exports/android
           if [[ "${{ steps.release.outputs.mode }}" == "production" ]]; then
             apk="exports/android/popugvpocket-${version}.apk"
-            run_godot_export "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Compact Debug" "$apk"
-            run_godot_export "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Bundle" "exports/android/popugvpocket-${version}.aab"
+            run_godot_export "$GODOT_BIN" --headless --path . --export-release "Android Compact Debug" "$apk"
+            run_godot_export "$GODOT_BIN" --headless --path . --export-release "Android Bundle" "exports/android/popugvpocket-${version}.aab"
           else
             apk="exports/android/popugvpocket-${version}-debug.apk"
-            run_godot_export "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-debug "Android Compact Debug" "$apk"
+            run_godot_export "$GODOT_BIN" --headless --path . --export-debug "Android Compact Debug" "$apk"
           fi
           sha256sum exports/android/* > exports/android/SHA256SUMS.txt
       - name: Inspect APK

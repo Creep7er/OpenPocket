@@ -175,7 +175,6 @@ jobs:
           draft: ${{ steps.release.outputs.draft }}
           prerelease: ${{ steps.release.outputs.mode == 'debug-prerelease' || steps.release.outputs.prerelease == 'true' }}
           overwrite_files: true
-          fail_on_unmatched_files: true
           files: |
             exports/android/*.apk
             exports/android/*.aab

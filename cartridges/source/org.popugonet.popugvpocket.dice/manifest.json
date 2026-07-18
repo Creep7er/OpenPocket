@@ -1,0 +1,6 @@
+{
+  "id": "org.popugonet.popugvpocket.dice", "name": "Pocket Dice", "version": "1.0.0", "type": "app",
+  "entry_scene": "main.tscn", "sdk_version": "0.5.0", "author": "PopugVPocket Examples",
+  "description": "Controller-first polyhedral dice roller.", "category": "utility",
+  "capabilities": ["storage", "audio", "theme", "system_menu"]
+}

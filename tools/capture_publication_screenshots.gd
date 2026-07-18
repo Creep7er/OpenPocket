@@ -1,12 +1,14 @@
 extends Control
 
 const MainScene := preload("res://app/main.tscn")
-const BreakoutScene := preload("res://cartridges/source/org.openpocket.breakout/main.tscn")
+const BreakoutScene := preload("res://cartridges/source/org.popugonet.popugvpocket.breakout/main.tscn")
 const CAPTURE_SIZE := Vector2i(393, 852)
+const LANDSCAPE_SIZE := Vector2i(852, 393)
 const OUTPUT_DIR := "res://docs/screenshots"
 
 var app: Control
 var _saved_settings: Dictionary = {}
+var _capture_size := CAPTURE_SIZE
 
 
 func _ready() -> void:
@@ -18,11 +20,13 @@ func _ready() -> void:
 	app = MainScene.instantiate()
 	add_child(app)
 	await _wait_frames(5)
+	await _capture("boot.png")
 	app.shell_view.booting = false
 
 	await _capture_shell_screens()
 	await _capture_builtin_screens()
 	await _capture_breakout()
+	await _capture_landscape_profile()
 	_build_hero()
 	_restore_capture_settings()
 	CartridgeAudio.end_scope()
@@ -39,35 +43,40 @@ func _ready() -> void:
 func _capture_shell_screens() -> void:
 	app.shell_view.show_home()
 	await _capture("home.png")
+	await _capture("vboy-home.png")
 
 	var packages: Array[Dictionary] = PocketPackages.get_packages()
 	app.shell_view.show_library(packages)
 	await _capture("library.png")
+	await _capture("vboy-library.png")
 
 	if not packages.is_empty():
 		app.shell_view.call("_show_cartridge_details", packages[0])
 		await _capture("cartridge-details.png")
 
 	PocketStorage.set_setting("developer_mode", false)
-	var fixture := ProjectSettings.globalize_path("res://store/test_fixtures/org.openpocket.pixelclock-1.0.0.pctrg")
+	var fixture := ProjectSettings.globalize_path("res://store/test_fixtures/org.popugonet.popugvpocket.pixelclock-1.0.0.pctrg")
 	app.shell_view.call("_prepare_external_install", fixture)
 	await _capture("install-cartridge.png")
 	PocketStorage.set_setting("developer_mode", true)
 
 	app.shell_view.show_store()
 	await _capture("store.png")
+	await _capture("vboy-store.png")
+	PocketStorage.set_setting("direction_control", "dpad")
+	await _capture("controls-dpad.png")
 
 
 func _capture_builtin_screens() -> void:
-	await _launch_builtin("org.openpocket.snake")
+	await _launch_builtin("org.popugonet.popugvpocket.snake")
 	app.active_game.call("_start_game")
 	await _capture("snake.png")
 
-	await _launch_builtin("org.openpocket.pong")
+	await _launch_builtin("org.popugonet.popugvpocket.pong")
 	app.active_game.call("_start_match")
 	await _capture("pong.png")
 
-	await _launch_builtin("org.openpocket.notes")
+	await _launch_builtin("org.popugonet.popugvpocket.notes")
 	var demo_notes: Array[String] = ["PUBLIC SNAPSHOT", "CARTRIDGES READY", "PIXEL NOTES"]
 	app.active_game.notes = demo_notes
 	app.active_game.selected_index = 1
@@ -79,13 +88,40 @@ func _capture_breakout() -> void:
 	_clear_active_game()
 	var breakout := BreakoutScene.instantiate()
 	app.active_game = breakout
-	app.active_package = {"id": "org.openpocket.breakout", "name": "Breakout Mini"}
-	CartridgeAudio.begin_scope("org.openpocket.breakout")
+	app.active_package = {"id": "org.popugonet.popugvpocket.breakout", "name": "Breakout Mini"}
+	CartridgeAudio.begin_scope("org.popugonet.popugvpocket.breakout")
 	app.console_frame.set_screen(breakout)
 	await _wait_frames(3)
 	breakout.call("_start_game")
 	breakout.call("_serve_ball")
 	await _capture("breakout.png")
+
+
+func _capture_landscape_profile() -> void:
+	_clear_active_game()
+	PocketStorage.set_setting("console_profile", "vgirl")
+	_capture_size = LANDSCAPE_SIZE
+	DisplayServer.window_set_min_size(Vector2i(640, 360))
+	DisplayServer.window_set_size(_capture_size)
+	await _wait_frames(8)
+	app.shell_view.show_home()
+	await _capture("vgirl-home.png")
+	app.shell_view.show_library(PocketPackages.get_packages())
+	await _capture("vgirl-library.png")
+	PocketStorage.set_setting("direction_control", "stick")
+	PocketStorage.set_setting("stick_mode", "fixed")
+	await _capture("controls-fixed-stick.png")
+	PocketStorage.set_setting("stick_mode", "floating")
+	await _capture("controls-floating-stick.png")
+	await _launch_builtin("org.popugonet.popugvpocket.snake")
+	app.active_game.call("_start_game")
+	await _capture("vgirl-game.png")
+	PocketStorage.set_setting("console_profile", "vboy")
+	PocketStorage.set_setting("direction_control", "dpad")
+	_capture_size = CAPTURE_SIZE
+	DisplayServer.window_set_min_size(Vector2i(360, 640))
+	DisplayServer.window_set_size(_capture_size)
+	await _wait_frames(8)
 
 
 func _launch_builtin(cartridge_id: String) -> void:
@@ -104,6 +140,7 @@ func _clear_active_game() -> void:
 		app.active_game.queue_free()
 		app.active_game = null
 		app.active_package = {}
+	app.console_frame.set_screen(app.shell_view)
 
 
 func _capture(filename: String) -> void:
@@ -114,7 +151,7 @@ func _capture(filename: String) -> void:
 	await _wait_frames(6)
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
-	if image.get_size() != CAPTURE_SIZE:
+	if image.get_size() != _capture_size:
 		push_error("Unexpected screenshot size: " + str(image.get_size()))
 		get_tree().quit(1)
 		return
@@ -136,14 +173,14 @@ func _build_hero() -> void:
 		source.convert(Image.FORMAT_RGBA8)
 		var position := Vector2i(border + index * (CAPTURE_SIZE.x + gap), border)
 		hero.blit_rect(source, Rect2i(Vector2i.ZERO, CAPTURE_SIZE), position)
-	var result := hero.save_png(OUTPUT_DIR.path_join("openpocket-hero.png"))
+	var result := hero.save_png(OUTPUT_DIR.path_join("popugvpocket-hero.png"))
 	if result != OK:
 		push_error("Could not save hero image")
 		get_tree().quit(1)
 
 
 func _save_capture_settings() -> void:
-	for key in ["theme", "scanlines", "debug_info", "developer_mode", "sound_enabled"]:
+	for key in ["theme", "scanlines", "debug_info", "developer_mode", "sound_enabled", "console_profile", "direction_control", "stick_mode"]:
 		_saved_settings[key] = PocketStorage.get_setting(key, null)
 
 
@@ -153,6 +190,11 @@ func _apply_capture_settings() -> void:
 	PocketStorage.set_setting("debug_info", false)
 	PocketStorage.set_setting("developer_mode", false)
 	PocketStorage.set_setting("sound_enabled", false)
+	PocketStorage.set_setting("console_profile", "vboy")
+	PocketStorage.set_setting("direction_control", "dpad")
+	PocketStorage.set_setting("stick_mode", "fixed")
+	DisplayServer.window_set_min_size(Vector2i(360, 640))
+	DisplayServer.window_set_size(CAPTURE_SIZE)
 
 
 func _restore_capture_settings() -> void:

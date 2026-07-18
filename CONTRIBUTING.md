@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping improve OpenPocket. SDK 0.4.0 is experimental, so focused changes with explicit tests and documentation are especially valuable.
+Thank you for helping improve PopugVPocket. SDK 0.5.0 is experimental, so focused changes with explicit tests and documentation are especially valuable.
 
 ## Requirements
 
@@ -12,8 +12,8 @@ Thank you for helping improve OpenPocket. SDK 0.4.0 is experimental, so focused 
 ## Setup And Checks
 
 ```powershell
-git clone https://github.com/Creep7er/OpenPocket.git
-cd OpenPocket
+git clone https://github.com/Creep7er/PopugVPocket.git
+cd PopugVPocket
 godot --path .
 python tools/validate_project.py
 godot --headless --path . --editor --quit
@@ -30,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Compact Debug" `
-  -Output exports\android\openpocket-0.4.0-compact-debug.apk
+  -Output exports\android\popugvpocket-0.5.0-compact-debug.apk
 ```
 
 ## Runtime And UI Conventions

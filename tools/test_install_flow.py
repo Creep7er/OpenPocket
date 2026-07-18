@@ -13,8 +13,8 @@ import cartridge_builder
 
 
 ROOT = Path(__file__).resolve().parents[1]
-V1 = ROOT / "store" / "test_fixtures" / "org.openpocket.pixelclock-1.0.0.pctrg"
-V11 = ROOT / "store" / "mock_packages" / "org.openpocket.pixelclock-1.1.0.pctrg"
+V1 = ROOT / "store" / "test_fixtures" / "org.popugonet.popugvpocket.pixelclock-1.0.0.pctrg"
+V11 = ROOT / "store" / "mock_packages" / "org.popugonet.popugvpocket.pixelclock-1.1.0.pctrg"
 
 
 def install(archive_path: Path, packages: Path, registry: dict) -> dict:
@@ -53,7 +53,7 @@ def uninstall(package_id: str, packages: Path, registry: dict, storage: dict, re
 
 
 def main() -> int:
-    package_id = "org.openpocket.pixelclock"
+    package_id = "org.popugonet.popugvpocket.pixelclock"
     with tempfile.TemporaryDirectory() as temp:
         root = Path(temp)
         packages = root / "packages"

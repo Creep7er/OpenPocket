@@ -1,6 +1,6 @@
 # Cartridge Format
 
-OpenPocket cartridges use `.pctrg`, a ZIP container with MIME type `application/x-openpocket-cartridge`.
+PopugVPocket cartridges use `.pctrg`, a ZIP container with MIME type `application/x-popugvpocket-cartridge`.
 
 Required files:
 

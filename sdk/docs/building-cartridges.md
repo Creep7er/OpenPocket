@@ -9,13 +9,13 @@ python tools\cartridge_builder.py build packages\games\snake
 Validate:
 
 ```powershell
-python tools\cartridge_builder.py validate dist\cartridges\org.openpocket.snake-0.3.0-dev.pctrg
+python tools\cartridge_builder.py validate dist\cartridges\org.popugonet.popugvpocket.snake-0.3.0-dev.pctrg
 ```
 
 Inspect:
 
 ```powershell
-python tools\cartridge_builder.py inspect dist\cartridges\org.openpocket.snake-0.3.0-dev.pctrg
+python tools\cartridge_builder.py inspect dist\cartridges\org.popugonet.popugvpocket.snake-0.3.0-dev.pctrg
 ```
 
 Generate the local mock Store catalog:

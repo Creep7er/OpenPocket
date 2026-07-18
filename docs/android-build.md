@@ -1,6 +1,6 @@
 # Android Build
 
-OpenPocket 0.4.0 targets portrait Android with package id `org.openpocket.app`, `versionName` 0.4.0, and `versionCode` 6.
+PopugVPocket 0.5.0 targets portrait Android with package id `org.popugonet.popugvpocket`, `versionName` 0.5.0, and `versionCode` 6.
 
 ## Requirements
 
@@ -19,12 +19,12 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk-17 `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Compact Debug" `
-  -Output exports\android\openpocket-0.4.0-compact-debug.apk
+  -Output exports\android\popugvpocket-0.5.0-compact-debug.apk
 ```
 
 `-Godot` may be omitted when `godot` or `godot4` is on `PATH`. `-JavaHome` and `-AndroidHome` may be omitted when `JAVA_HOME` and `ANDROID_HOME` are set. The script installs the matching Godot Android build template into the ignored `android/build/` directory when needed.
 
-The compact preset exports arm64, keeps the OpenPocket SAF plugin, and compresses the native Godot library. It is debug-signed for local testing.
+The compact preset exports arm64, keeps the PopugVPocket SAF plugin, and compresses the native Godot library. It is debug-signed for local testing.
 
 ## AAB
 
@@ -34,7 +34,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk-17 `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Bundle" `
-  -Output exports\android\openpocket-0.4.0.aab `
+  -Output exports\android\popugvpocket-0.5.0.aab `
   -Release
 ```
 
@@ -46,7 +46,7 @@ Enable USB debugging, connect the device, then use the SDK `adb` executable:
 
 ```powershell
 adb devices
-adb install -r exports\android\openpocket-0.4.0-compact-debug.apk
+adb install -r exports\android\popugvpocket-0.5.0-compact-debug.apk
 ```
 
-OpenPocket uses Android Storage Access Framework without broad storage permissions. INTERNET is enabled in 0.4.0 for HTTPS catalog and release asset GET requests.
+PopugVPocket uses Android Storage Access Framework without broad storage permissions. INTERNET is enabled in 0.5.0 for HTTPS catalog and release asset GET requests.

@@ -10,6 +10,12 @@ var _defaults: Dictionary = {
 	"keyboard_hints": true,
 	"debug_info": false,
 	"developer_mode": false,
+	"console_profile": "vboy",
+	"direction_control": "dpad",
+	"stick_mode": "fixed",
+	"stick_size": 1.0,
+	"stick_deadzone": 0.28,
+	"stick_side": "left",
 }
 
 var _settings: Dictionary = {}

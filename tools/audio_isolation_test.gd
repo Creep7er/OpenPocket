@@ -17,12 +17,12 @@ func _run() -> void:
 	if bool(audio.call("play_ui_safe", "missing_event")) or not bool(audio.call("play_ui_safe", "focus")):
 		_fail("Invalid audio event affected PocketAudio health")
 		return
-	cartridge_audio.call("begin_scope", "org.openpocket.breakout")
-	storage.call("set_package_setting", "org.openpocket.breakout", "sound", true)
+	cartridge_audio.call("begin_scope", "org.popugonet.popugvpocket.breakout")
+	storage.call("set_package_setting", "org.popugonet.popugvpocket.breakout", "sound", true)
 	if not bool(cartridge_audio.call("play_sfx", "brick")):
 		_fail("Breakout scoped audio unavailable")
 		return
-	storage.call("set_package_setting", "org.openpocket.breakout", "sound", false)
+	storage.call("set_package_setting", "org.popugonet.popugvpocket.breakout", "sound", false)
 	if bool(cartridge_audio.call("play_sfx", "brick")):
 		_fail("Breakout local mute was ignored")
 		return
@@ -33,12 +33,12 @@ func _run() -> void:
 	if not bool(audio.call("play_ui_safe", "back")):
 		_fail("Shell audio unavailable after Breakout exit")
 		return
-	cartridge_audio.call("begin_scope", "org.openpocket.snake")
+	cartridge_audio.call("begin_scope", "org.popugonet.popugvpocket.snake")
 	if not bool(cartridge_audio.call("play_sfx", "select")):
 		_fail("Snake audio unavailable after Breakout exit")
 		return
 	cartridge_audio.call("end_scope")
-	cartridge_audio.call("begin_scope", "org.openpocket.pong")
+	cartridge_audio.call("begin_scope", "org.popugonet.popugvpocket.pong")
 	if not bool(cartridge_audio.call("play_sfx", "select")):
 		_fail("Pong audio unavailable after Breakout exit")
 		return

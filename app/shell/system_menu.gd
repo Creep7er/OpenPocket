@@ -39,7 +39,7 @@ func _ready() -> void:
 				{"label": "Resume", "action": "resume"},
 				{"label": "Home", "action": "home"},
 				{"label": "Settings", "action": "settings"},
-				{"label": "Exit OpenPocket", "action": "exit"},
+				{"label": "Exit PopugVPocket", "action": "exit"},
 			]
 
 
@@ -65,7 +65,7 @@ func _draw() -> void:
 	draw_rect(panel, p["dark"], true)
 	draw_rect(panel, p["hi"], false, 2)
 	draw_rect(Rect2(panel.position + Vector2(6, 6), panel.size - Vector2(12, 12)), p["mid"], false, 2)
-	var title := "EXIT OPENPOCKET?" if confirm_exit else "PAUSED" if has_active_game else "SYSTEM"
+	var title := "EXIT %s?" % BrandConfig.product_name.to_upper() if confirm_exit else "PAUSED" if has_active_game else "SYSTEM"
 	PixelFont.draw_text(self, panel.position + Vector2(18, 18), title, p["hi"], 2)
 	var y := int(panel.position.y + 60)
 	for index in range(items.size()):

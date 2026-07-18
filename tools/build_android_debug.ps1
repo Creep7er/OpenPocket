@@ -1,5 +1,5 @@
 param(
-    [string]$Output = "exports/android/openpocket-0.4.0-development.apk",
+    [string]$Output = "exports/android/popugvpocket-0.5.0-development.apk",
     [string]$Preset = "Android Debug",
     [string]$Godot = "",
     [string]$JavaHome = "",
@@ -12,7 +12,7 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $AndroidBuild = Join-Path $Root "android/build"
 $AndroidBuildVersion = Join-Path $Root "android/.build_version"
-$PluginAar = Join-Path $Root "android/plugins/OpenPocketFilePicker.aar"
+$PluginAar = Join-Path $Root "android/plugins/PopugVPocketFilePicker.aar"
 
 if ([string]::IsNullOrWhiteSpace($Godot)) {
     $PortableGodot = Join-Path $Root ".tools/godot/Godot_v4.7-stable_win64_console.exe"
@@ -87,9 +87,9 @@ foreach ($ImportSidecar in Get-ChildItem -Recurse -File -Filter "*.import" -Lite
 }
 
 if (!(Test-Path $PluginAar)) {
-    & (Join-Path $Root "android/plugins/openpocket_file_picker/build_plugin.ps1") -JavaHome $JavaHome -AndroidHome $AndroidHome
+    & (Join-Path $Root "android/plugins/popugvpocket_file_picker/build_plugin.ps1") -JavaHome $JavaHome -AndroidHome $AndroidHome
     if ($LASTEXITCODE -ne 0) {
-        throw "OpenPocketFilePicker build failed with exit code $LASTEXITCODE"
+        throw "PopugVPocketFilePicker build failed with exit code $LASTEXITCODE"
     }
 }
 
@@ -125,7 +125,7 @@ if (!(Test-Path $OutputPath)) {
     throw "APK was not created: $OutputPath"
 }
 
-$CompatiblePath = Join-Path $Root "exports/android/openpocket-debug.apk"
+$CompatiblePath = Join-Path $Root "exports/android/popugvpocket-debug.apk"
 if ($Preset -eq "Android Debug" -and $OutputPath -ne $CompatiblePath) {
     Copy-Item -Force $OutputPath $CompatiblePath
 }

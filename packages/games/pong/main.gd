@@ -8,7 +8,7 @@ const PongRules := preload("res://packages/games/pong/pong_rules.gd")
 const PongCPU := preload("res://packages/games/pong/pong_cpu_controller.gd")
 const PongStatistics := preload("res://packages/games/pong/pong_statistics.gd")
 
-const PACKAGE_ID := "org.openpocket.pong"
+const PACKAGE_ID := "org.popugonet.popugvpocket.pong"
 const SCREEN_MENU := "menu"
 const SCREEN_PLAYING := "playing"
 const SCREEN_SETTINGS := "settings"

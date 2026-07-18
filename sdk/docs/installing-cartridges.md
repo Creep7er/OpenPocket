@@ -1,6 +1,6 @@
 # Installing Cartridges
 
-OpenPocket installs cartridges into:
+PopugVPocket installs cartridges into:
 
 ```text
 user://cartridges/packages/<cartridge-id>/

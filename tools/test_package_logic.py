@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small repository-level checks for OpenPocket package logic."""
+"""Small repository-level checks for PopugVPocket package logic."""
 
 from __future__ import annotations
 
@@ -107,14 +107,14 @@ def test_cartridge_manifests() -> None:
         for field in ["format_version", "id", "name", "version", "entry_scene", "content"]:
             if field not in manifest:
                 fail(f"{path} misses {field}")
-        if manifest["format_version"] != 1:
+        if manifest["format_version"] != 2:
             fail(f"{path} must use cartridge format 1")
 
 
 def test_store_catalog() -> None:
     catalog = json.loads(read("store/mock_catalog.json"))
-    if catalog.get("schema_version") != 1:
-        fail("Store catalog schema_version must be 1")
+    if catalog.get("schema_version") != 2:
+        fail("Store catalog schema_version must be 2")
     for entry in catalog.get("cartridges", []):
         for field in ["id", "name", "version", "download", "sha256", "curated"]:
             if field not in entry:
@@ -129,7 +129,7 @@ def main() -> int:
     test_cartridge_runtime_files()
     test_cartridge_manifests()
     test_store_catalog()
-    print("OpenPocket package logic checks passed.")
+    print("PopugVPocket package logic checks passed.")
     return 0
 
 

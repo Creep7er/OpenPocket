@@ -1,6 +1,6 @@
 # Pocket Pong
 
-Single-player Pong for OpenPocket.
+Single-player Pong for PopugVPocket.
 
 ## Controls
 
@@ -27,7 +27,7 @@ Settings apply to the next match.
 
 ## Storage Keys
 
-Settings use `PocketStorage.get_package_setting("org.openpocket.pong", key, default)`.
+Settings use `PocketStorage.get_package_setting("org.popugonet.popugvpocket.pong", key, default)`.
 
 Data keys:
 

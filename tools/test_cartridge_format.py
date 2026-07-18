@@ -21,13 +21,13 @@ def write_archive(path: Path, manifest: dict, content: bytes, extra_name: str | 
 
 def base_manifest(content_sha: str) -> dict:
     return {
-        "format_version": 1,
+        "format_version": 2,
         "id": "org.example.valid",
         "name": "Valid",
         "version": "1.0.0",
         "type": "game",
         "entry_scene": "res://cartridges/org.example.valid/main.tscn",
-        "sdk_version": "0.3.1",
+        "sdk_version": "0.5.0",
         "runtime": {"min_version": "0.3.1", "max_version": None},
         "author": {"name": "Tester"},
         "description": "Validation fixture.",
@@ -62,7 +62,7 @@ def main() -> int:
         write_archive(traversal, base_manifest(content_sha), content, "../evil.txt")
         expect_failure(traversal, "path traversal")
 
-    print("OpenPocket cartridge format checks passed.")
+    print("PopugVPocket cartridge format checks passed.")
     return 0
 
 

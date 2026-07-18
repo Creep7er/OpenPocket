@@ -1,124 +1,124 @@
 {
-  "cartridges": [
-    {
-      "author": "OpenPocket Examples",
-      "category": "arcade",
-      "curated": true,
-      "description": "Three-life pixel brick breaker.",
-      "download": "mock_packages/org.openpocket.breakout-1.0.1.pctrg",
-      "featured": true,
-      "icon": "icons/org.openpocket.breakout.png",
-      "id": "org.openpocket.breakout",
-      "name": "Breakout Mini",
-      "sha256": "88e8705ffac079ff3d1f1e266e9d1a9e62e1cb3cb900cf06ccceddfe9b186aaa",
-      "size": 13828,
-      "tags": [
-        "arcade",
-        "breakout"
-      ],
-      "type": "game",
-      "version": "1.0.1"
-    },
-    {
-      "author": "OpenPocket Examples",
-      "category": "utility",
-      "curated": true,
-      "description": "D4 through D20 with history.",
-      "download": "mock_packages/org.openpocket.dice-1.0.0.pctrg",
-      "featured": true,
-      "icon": "icons/org.openpocket.dice.png",
-      "id": "org.openpocket.dice",
-      "name": "Pocket Dice",
-      "sha256": "39717e752f4e7f83a2692f31f435ca63629aa77cfc5ee620fc3d17df851ce28e",
-      "size": 4524,
-      "tags": [
-        "dice",
-        "tabletop"
-      ],
-      "type": "app",
-      "version": "1.0.0"
-    },
-    {
-      "author": "OpenPocket Contributors",
-      "category": "productivity",
-      "curated": true,
-      "description": "Short local notes with a pixel keyboard.",
-      "download": "mock_packages/org.openpocket.notes-0.3.0-dev.pctrg",
-      "featured": false,
-      "icon": "icons/org.openpocket.notes.png",
-      "id": "org.openpocket.notes",
-      "name": "Pocket Notes",
-      "sha256": "561c9cd5cef2105e0e122cd593fa11a06aedf13d0ad4c87c2d2bb1f73754455e",
-      "size": 5986,
-      "tags": [
-        "notes",
-        "productivity",
-        "built-in"
-      ],
-      "type": "app",
-      "version": "0.3.0-dev"
-    },
-    {
-      "author": "OpenPocket Examples",
-      "category": "utility",
-      "curated": true,
-      "description": "Large pixel clock with stopwatch, timer, and display style setting.",
-      "download": "mock_packages/org.openpocket.pixelclock-1.1.0.pctrg",
-      "featured": true,
-      "icon": "icons/org.openpocket.pixelclock.png",
-      "id": "org.openpocket.pixelclock",
-      "name": "Pixel Clock",
-      "sha256": "1bc86abe6900d33c78166d19b5aa19de44ed13af88e2a8001288ac91ee77d18b",
-      "size": 5445,
-      "tags": [
-        "clock",
-        "timer",
-        "utility"
-      ],
-      "type": "app",
-      "version": "1.1.0"
-    },
-    {
-      "author": "OpenPocket Contributors",
-      "category": "arcade",
-      "curated": true,
-      "description": "Pocket Pong demo game.",
-      "download": "mock_packages/org.openpocket.pong-0.3.0-dev.pctrg",
-      "featured": true,
-      "icon": "icons/org.openpocket.pong.png",
-      "id": "org.openpocket.pong",
-      "name": "Pocket Pong",
-      "sha256": "e35d0af8886cc0bf23e6e004e71cae77bfba68897673f36078e2f6141760e425",
-      "size": 18369,
-      "tags": [
-        "arcade",
-        "two-player",
-        "built-in"
-      ],
-      "type": "game",
-      "version": "0.3.0-dev"
-    },
-    {
-      "author": "OpenPocket Contributors",
-      "category": "arcade",
-      "curated": true,
-      "description": "Classic Snake for OpenPocket.",
-      "download": "mock_packages/org.openpocket.snake-0.3.0-dev.pctrg",
-      "featured": true,
-      "icon": "icons/org.openpocket.snake.png",
-      "id": "org.openpocket.snake",
-      "name": "Snake",
-      "sha256": "4614a9748a41de4cc80b159bc1c8231dd00fce15b02a88bcfeff13c622e94433",
-      "size": 20747,
-      "tags": [
-        "arcade",
-        "singleplayer",
-        "built-in"
-      ],
-      "type": "game",
-      "version": "0.3.0-dev"
-    }
-  ],
-  "generated_at": "2026-07-15T09:47:08+00:00",
-  "schema_version": 1
+    "cartridges":  [
+                       {
+                           "author":  "PopugVPocket Examples",
+                           "category":  "arcade",
+                           "curated":  true,
+                           "description":  "Three-life pixel brick breaker.",
+                           "download":  "mock_packages/org.popugonet.popugvpocket.breakout-1.0.1.pctrg",
+                           "featured":  true,
+                           "icon":  "icons/org.popugonet.popugvpocket.breakout.png",
+                           "id":  "org.popugonet.popugvpocket.breakout",
+                           "name":  "Breakout Mini",
+                           "sha256":  "88e8705ffac079ff3d1f1e266e9d1a9e62e1cb3cb900cf06ccceddfe9b186aaa",
+                           "size":  13828,
+                           "tags":  [
+                                        "arcade",
+                                        "breakout"
+                                    ],
+                           "type":  "game",
+                           "version":  "1.0.1"
+                       },
+                       {
+                           "author":  "PopugVPocket Examples",
+                           "category":  "utility",
+                           "curated":  true,
+                           "description":  "D4 through D20 with history.",
+                           "download":  "mock_packages/org.popugonet.popugvpocket.dice-1.0.0.pctrg",
+                           "featured":  true,
+                           "icon":  "icons/org.popugonet.popugvpocket.dice.png",
+                           "id":  "org.popugonet.popugvpocket.dice",
+                           "name":  "Pocket Dice",
+                           "sha256":  "39717e752f4e7f83a2692f31f435ca63629aa77cfc5ee620fc3d17df851ce28e",
+                           "size":  4524,
+                           "tags":  [
+                                        "dice",
+                                        "tabletop"
+                                    ],
+                           "type":  "app",
+                           "version":  "1.0.0"
+                       },
+                       {
+                           "author":  "PopugVPocket Contributors",
+                           "category":  "productivity",
+                           "curated":  true,
+                           "description":  "Short local notes with a pixel keyboard.",
+                           "download":  "mock_packages/org.popugonet.popugvpocket.notes-0.3.0-dev.pctrg",
+                           "featured":  false,
+                           "icon":  "icons/org.popugonet.popugvpocket.notes.png",
+                           "id":  "org.popugonet.popugvpocket.notes",
+                           "name":  "Pocket Notes",
+                           "sha256":  "561c9cd5cef2105e0e122cd593fa11a06aedf13d0ad4c87c2d2bb1f73754455e",
+                           "size":  5986,
+                           "tags":  [
+                                        "notes",
+                                        "productivity",
+                                        "built-in"
+                                    ],
+                           "type":  "app",
+                           "version":  "0.3.0-dev"
+                       },
+                       {
+                           "author":  "PopugVPocket Examples",
+                           "category":  "utility",
+                           "curated":  true,
+                           "description":  "Large pixel clock with stopwatch, timer, and display style setting.",
+                           "download":  "mock_packages/org.popugonet.popugvpocket.pixelclock-1.1.0.pctrg",
+                           "featured":  true,
+                           "icon":  "icons/org.popugonet.popugvpocket.pixelclock.png",
+                           "id":  "org.popugonet.popugvpocket.pixelclock",
+                           "name":  "Pixel Clock",
+                           "sha256":  "1bc86abe6900d33c78166d19b5aa19de44ed13af88e2a8001288ac91ee77d18b",
+                           "size":  5445,
+                           "tags":  [
+                                        "clock",
+                                        "timer",
+                                        "utility"
+                                    ],
+                           "type":  "app",
+                           "version":  "1.1.0"
+                       },
+                       {
+                           "author":  "PopugVPocket Contributors",
+                           "category":  "arcade",
+                           "curated":  true,
+                           "description":  "Pocket Pong demo game.",
+                           "download":  "mock_packages/org.popugonet.popugvpocket.pong-0.3.0-dev.pctrg",
+                           "featured":  true,
+                           "icon":  "icons/org.popugonet.popugvpocket.pong.png",
+                           "id":  "org.popugonet.popugvpocket.pong",
+                           "name":  "Pocket Pong",
+                           "sha256":  "e35d0af8886cc0bf23e6e004e71cae77bfba68897673f36078e2f6141760e425",
+                           "size":  18369,
+                           "tags":  [
+                                        "arcade",
+                                        "two-player",
+                                        "built-in"
+                                    ],
+                           "type":  "game",
+                           "version":  "0.3.0-dev"
+                       },
+                       {
+                           "author":  "PopugVPocket Contributors",
+                           "category":  "arcade",
+                           "curated":  true,
+                           "description":  "Classic Snake for PopugVPocket.",
+                           "download":  "mock_packages/org.popugonet.popugvpocket.snake-0.3.0-dev.pctrg",
+                           "featured":  true,
+                           "icon":  "icons/org.popugonet.popugvpocket.snake.png",
+                           "id":  "org.popugonet.popugvpocket.snake",
+                           "name":  "Snake",
+                           "sha256":  "4614a9748a41de4cc80b159bc1c8231dd00fce15b02a88bcfeff13c622e94433",
+                           "size":  20747,
+                           "tags":  [
+                                        "arcade",
+                                        "singleplayer",
+                                        "built-in"
+                                    ],
+                           "type":  "game",
+                           "version":  "0.3.0-dev"
+                       }
+                   ],
+    "generated_at":  "2026-07-15T09:47:08+00:00",
+    "schema_version":  2
 }

@@ -1,12 +1,12 @@
 name: Bug report
-description: Report a reproducible OpenPocket problem
+description: Report a reproducible PopugVPocket problem
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: input
     id: version
     attributes:
-      label: OpenPocket version or commit
+      label: PopugVPocket version or commit
     validations:
       required: true
   - type: input

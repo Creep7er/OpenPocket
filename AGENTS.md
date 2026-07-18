@@ -1,6 +1,9 @@
 # AGENTS.md
 
-Rules for AI-assisted work on OpenPocket:
+Rules for AI-assisted work on PopugVPocket:
+
+- Product identity is PopugVPocket by Popugonet; cartridges use format v2 and `.pctrg`.
+- Official built-ins use `org.popugonet.popugvpocket.*`; templates must use an obvious example namespace.
 
 - Read `ARCHITECTURE.md` and the relevant cartridge/SDK docs before changing behavior.
 - Preserve public Pocket APIs unless the task explicitly includes a documented migration.
@@ -12,6 +15,7 @@ Rules for AI-assisted work on OpenPocket:
 - Catalog entries use HTTPS release assets and SHA-256; catalog inclusion is not a sandbox.
 - Every built-in package has valid `manifest.json` and `cartridge.json` metadata and an entry in `packages/index.json`.
 - Preserve controller-only navigation and Android Back behavior.
+- VBoy/VGirl are physical profiles; cartridge content always targets `PocketScreen` 400x320.
 - Preserve the pixel visual language: hard edges, limited palettes, nearest filtering, and no standard Godot controls in the visible Shell.
 - Do not add features without matching documentation and focused verification.
 - Avoid unrelated refactors and keep the requested scope narrow.

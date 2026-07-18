@@ -8,14 +8,14 @@ func _initialize() -> void:
 func _run() -> void:
 	var cartridge_audio := root.get_node("CartridgeAudio")
 	var storage := root.get_node("PocketStorage")
-	storage.call("set_package_setting", "org.openpocket.breakout", "sound", true)
-	var scene := load("res://cartridges/source/org.openpocket.breakout/main.tscn") as PackedScene
+	storage.call("set_package_setting", "org.popugonet.popugvpocket.breakout", "sound", true)
+	var scene := load("res://cartridges/source/org.popugonet.popugvpocket.breakout/main.tscn") as PackedScene
 	if scene == null:
 		_fail("Breakout entry scene did not load")
 		return
 	var game := scene.instantiate()
 	root.add_child(game)
-	cartridge_audio.call("begin_scope", "org.openpocket.breakout")
+	cartridge_audio.call("begin_scope", "org.popugonet.popugvpocket.breakout")
 	game.call("_start_game")
 	if String(game.get("screen")) != "playing" or int(game.get("lives")) != 3:
 		_fail("Breakout round did not start")

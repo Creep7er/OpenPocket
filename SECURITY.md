@@ -1,10 +1,10 @@
 # Security Policy
 
-OpenPocket 0.4.0 supports trusted built-in cartridges and experimental external cartridge installation. It is not a sandboxed third-party code platform.
+PopugVPocket 0.5.0 supports trusted built-in cartridges and experimental external cartridge installation. It is not a sandboxed third-party code platform.
 
 ## External Code Warning
 
-External `.pctrg` files can contain a Godot PCK and GDScript that executes inside the OpenPocket process. Such code can potentially access Godot APIs beyond the documented Pocket services.
+External `.pctrg` files can contain a Godot PCK and GDScript that executes inside the PopugVPocket process. Such code can potentially access Godot APIs beyond the documented Pocket services.
 
 - Developer Mode permits manual installation; it does not make code safe.
 - SHA-256 checksums verify integrity against expected metadata; they do not establish publisher identity or trust.
@@ -17,7 +17,7 @@ External `.pctrg` files can contain a Godot PCK and GDScript that executes insid
 
 The Android picker uses Storage Access Framework to let the user choose one file. The plugin copies that file into app-owned staging storage and does not request broad read, write, or manage-external-storage permissions.
 
-Android INTERNET permission is enabled for HTTPS GET requests to the public GitHub catalog and cartridge release assets. OpenPocket does not send analytics, device identifiers, achievement data, rewards, or the installed cartridge list. Cleartext HTTP is rejected.
+Android INTERNET permission is enabled for HTTPS GET requests to the public GitHub catalog and cartridge release assets. PopugVPocket does not send analytics, device identifiers, achievement data, rewards, or the installed cartridge list. Cleartext HTTP is rejected.
 
 ## Local Data
 

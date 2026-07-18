@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <meta-data
+            android:name="org.godotengine.plugin.v2.PopugVPocketFilePicker"
+            android:value="org.popugonet.popugvpocket.filepicker.PopugVPocketFilePicker" />
+    </application>
+</manifest>

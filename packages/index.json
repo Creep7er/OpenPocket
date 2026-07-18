@@ -1,7 +1,8 @@
 {
-  "packages": [
-    "games/snake",
-    "apps/notes",
-    "games/pong"
-  ]
+    "packages":  [
+                     "games/snake",
+                     "apps/notes",
+                     "games/pong",
+                     "games/breakout"
+                 ]
 }

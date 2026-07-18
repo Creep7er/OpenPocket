@@ -1,23 +1,27 @@
 ; Engine configuration file.
-; OpenPocket targets Godot 4.x without .NET.
+; PopugVPocket targets Godot 4.x without .NET.
 
 config_version=5
 
 [application]
 
-config/name="OpenPocket"
-config/description="Experimental virtual retro pocket console runtime, built-in packages, and SDK preview."
-config/version="0.4.0"
+config/name="PopugVPocket"
+config/description="A pixel handheld platform by Popugonet."
+config/version="0.5.0"
 run/main_scene="res://app/main.tscn"
 config/features=PackedStringArray("4.2")
-config/icon="res://packages/games/snake/icon.svg"
+config/icon="res://app/assets/branding/popugvpocket-mark.png"
 
 [autoload]
 
+BrandConfig="*res://app/runtime/branding/brand_config.gd"
+PocketScreen="*res://app/runtime/screen/pocket_screen.gd"
+ConsoleLayoutManager="*res://app/runtime/layout/console_layout_manager.gd"
 PocketInput="*res://app/runtime/input/pocket_input.gd"
 PocketRouter="*res://app/runtime/system/pocket_router.gd"
 PocketStorage="*res://app/runtime/storage/pocket_storage.gd"
 PocketFilePicker="*res://app/runtime/files/pocket_file_picker.gd"
+LegacyBackupImporter="*res://app/runtime/migration/legacy_backup_importer.gd"
 CartridgeManager="*res://app/runtime/cartridges/cartridge_manager.gd"
 AchievementManager="*res://app/runtime/achievements/achievement_manager.gd"
 CartridgeAchievements="*res://app/runtime/achievements/cartridge_achievements.gd"

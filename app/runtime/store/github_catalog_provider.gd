@@ -5,7 +5,7 @@ signal download_finished(result: Dictionary)
 
 const Cache := preload("res://app/runtime/store/catalog_cache.gd")
 const Paths := preload("res://app/runtime/cartridges/cartridge_paths.gd")
-const DEFAULT_URL := "https://raw.githubusercontent.com/Creep7er/openpocket-catalog/main/catalog.json"
+const DEFAULT_URL := "https://raw.githubusercontent.com/Creep7er/popugvpocket-catalog/main/catalog.json"
 const MAX_CATALOG_BYTES := 2 * 1024 * 1024
 const MAX_ENTRIES := 2000
 
@@ -46,7 +46,7 @@ func refresh_catalog(force: bool = false) -> Dictionary:
 		return {"ok": false, "error": "busy", "pending": true}
 	if not catalog_url.begins_with("https://") or "@" in catalog_url:
 		return {"ok": false, "error": "invalid_catalog_url"}
-	var headers := PackedStringArray(["Accept: application/json", "User-Agent: OpenPocket/0.4.0"])
+	var headers := PackedStringArray(["Accept: application/json", "User-Agent: " + BrandConfig.USER_AGENT])
 	if not force:
 		if not String(_metadata.get("etag", "")).is_empty(): headers.append("If-None-Match: " + String(_metadata["etag"]))
 		if not String(_metadata.get("last_modified", "")).is_empty(): headers.append("If-Modified-Since: " + String(_metadata["last_modified"]))
@@ -65,7 +65,7 @@ func download_cartridge(item: Dictionary) -> Dictionary:
 	_download_item = item.duplicate(true)
 	_download_path = Paths.download_path(String(item.get("id", "cartridge")) + "-" + String(item.get("version", "")) + ".pctrg")
 	_download.download_file = _download_path
-	var error := _download.request(url, PackedStringArray(["User-Agent: OpenPocket/0.4.0"]), HTTPClient.METHOD_GET)
+	var error := _download.request(url, PackedStringArray(["User-Agent: " + BrandConfig.USER_AGENT]), HTTPClient.METHOD_GET)
 	return {"ok": error == OK, "error": "pending" if error == OK else "network_error", "pending": error == OK}
 
 
@@ -98,7 +98,7 @@ func _on_download_completed(result: int, response_code: int, _headers: PackedStr
 
 
 func _parse_catalog(catalog: Dictionary) -> Dictionary:
-	if int(catalog.get("schema_version", 0)) != 1: return {"ok": false, "error": "invalid_schema", "items": []}
+	if int(catalog.get("schema_version", 0)) != BrandConfig.CATALOG_SCHEMA_VERSION: return {"ok": false, "error": "invalid_schema", "items": []}
 	var packages := Array(catalog.get("packages", []))
 	if packages.size() > MAX_ENTRIES: return {"ok": false, "error": "too_many_entries", "items": []}
 	var items: Array[Dictionary] = []
@@ -106,6 +106,7 @@ func _parse_catalog(catalog: Dictionary) -> Dictionary:
 	for value in packages:
 		if typeof(value) != TYPE_DICTIONARY: return {"ok": false, "error": "invalid_entry", "items": []}
 		var item := Dictionary(value).duplicate(true)
+		if String(item.get("moderation_status", "")) != "approved": continue
 		var cartridge_id := String(item.get("id", ""))
 		if cartridge_id.is_empty() or ids.has(cartridge_id): return {"ok": false, "error": "duplicate_id", "items": []}
 		ids[cartridge_id] = true

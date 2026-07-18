@@ -2,6 +2,7 @@ extends Control
 
 const PixelTouchButtonScene := preload("res://app/ui/components/pixel_touch_button.gd")
 const PixelDpadScene := preload("res://app/ui/components/pixel_dpad.gd")
+const PixelStickScene := preload("res://app/ui/components/pixel_stick.gd")
 
 const SCREEN_ASPECT := 1.25
 const MIN_SIDE_MARGIN := 8.0
@@ -22,6 +23,7 @@ var screen_holder: PanelContainer
 var screen_container: SubViewportContainer
 var screen_viewport: SubViewport
 var dpad: PixelDpad
+var stick: PixelStick
 var action_buttons: Dictionary = {}
 var system_buttons: Dictionary = {}
 var debug_overlay_enabled := false
@@ -37,6 +39,7 @@ var _dpad_rect := Rect2()
 var _menu_rect := Rect2()
 var _back_rect := Rect2()
 var _screen_scale := 1.0
+var _layout_signature := ""
 
 
 func _ready() -> void:
@@ -49,6 +52,10 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	var signature := String(PocketStorage.get_setting("console_profile", "vboy")) + ":" + String(PocketStorage.get_setting("direction_control", "dpad")) + ":" + String(PocketStorage.get_setting("stick_mode", "fixed")) + ":" + String(PocketStorage.get_setting("stick_side", "left"))
+	if signature != _layout_signature:
+		_layout_signature = signature
+		_layout_controls()
 	queue_redraw()
 
 
@@ -102,10 +109,14 @@ func _build_layout() -> void:
 	screen_viewport.transparent_bg = false
 	screen_viewport.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 	screen_container.add_child(screen_viewport)
+	PocketScreen.bind_viewport(screen_viewport)
 
 	dpad = PixelDpadScene.new()
 	dpad.state_changed.connect(func(button: String, pressed: bool) -> void: virtual_button_changed.emit(button, pressed))
 	add_child(dpad)
+	stick = PixelStickScene.new()
+	stick.state_changed.connect(func(button: String, pressed: bool) -> void: virtual_button_changed.emit(button, pressed))
+	add_child(stick)
 
 	action_buttons = {
 		PocketInput.A: _make_button("A", PocketInput.A, false, true),
@@ -134,6 +145,13 @@ func _make_button(label: String, button: String, compact: bool = false, primary:
 func _layout_controls() -> void:
 	var window_size: Vector2 = get_viewport_rect().size.floor()
 	_safe_rect = _get_safe_rect(window_size)
+	var use_stick := String(PocketStorage.get_setting("direction_control", "dpad")) == "stick"
+	dpad.visible = not use_stick
+	stick.visible = use_stick
+	stick.configure(String(PocketStorage.get_setting("stick_mode", "fixed")) == "floating", float(PocketStorage.get_setting("stick_deadzone", 0.28)))
+	if String(PocketStorage.get_setting("console_profile", "vboy")) == "vgirl" and window_size.x > window_size.y:
+		_layout_vgirl()
+		return
 	var outer_margin: float = clamp(_safe_rect.size.x * 0.018, 4.0, SAFE_FALLBACK_MARGIN)
 	_content_rect = _safe_rect.grow(-outer_margin)
 	var console_w: float = min(MAX_CONSOLE_WIDTH, _content_rect.size.x - MIN_SIDE_MARGIN * 2.0)
@@ -194,6 +212,7 @@ func _layout_controls() -> void:
 	_dpad_rect = Rect2(Vector2(controls_x, controls_y + maxf(0.0, (action_bounds_size.y - dpad_size) * 0.5)), Vector2(dpad_size, dpad_size))
 	dpad.position = _dpad_rect.position
 	dpad.size = _dpad_rect.size
+	_place_stick(_dpad_rect)
 
 	var cluster_center: Vector2 = Vector2(
 		floor(controls_x + dpad_size + center_gap + action_bounds_size.x * 0.5),
@@ -218,6 +237,63 @@ func _layout_controls() -> void:
 	queue_redraw()
 
 
+func _layout_vgirl() -> void:
+	var outer_margin: float = clamp(_safe_rect.size.y * 0.018, 4.0, SAFE_FALLBACK_MARGIN)
+	_content_rect = _safe_rect.grow(-outer_margin)
+	var console_h: float = minf(MAX_CONSOLE_WIDTH, _content_rect.size.y)
+	var console_w: float = minf(_content_rect.size.x, console_h * 1.78)
+	_console_rect = Rect2((_content_rect.position + (_content_rect.size - Vector2(console_w, console_h)) * 0.5).floor(), Vector2(console_w, console_h).floor())
+	var margin: float = floor(clamp(_console_rect.size.y * 0.055, 12.0, 26.0))
+	var header_h: float = floor(clamp(_console_rect.size.y * 0.09, 34.0, 52.0))
+	var available_h: float = _console_rect.size.y - header_h - margin * 2.0
+	var screen_h: float = floor(minf(available_h, (_console_rect.size.x * 0.58 - margin * 2.0) / SCREEN_ASPECT))
+	var screen_w: float = floor(screen_h * SCREEN_ASPECT)
+	_screen_rect = Rect2(Vector2(_console_rect.position.x + margin, _console_rect.position.y + header_h + (available_h - screen_h) * 0.5).floor(), Vector2(screen_w, screen_h))
+	screen_holder.position = _screen_rect.position
+	screen_holder.size = _screen_rect.size
+	screen_container.position = Vector2.ZERO
+	screen_container.size = _screen_rect.size
+	_screen_scale = floor(minf(screen_w / float(PocketScreen.LOGICAL_SIZE.x), screen_h / float(PocketScreen.LOGICAL_SIZE.y)))
+	var zone := Rect2(Vector2(_screen_rect.end.x + margin, _console_rect.position.y + header_h), Vector2(_console_rect.end.x - _screen_rect.end.x - margin * 2.0, available_h))
+	_controls_rect = zone
+	var control_size: float = floor(minf(zone.size.y * 0.54, zone.size.x * 0.48))
+	var left_side := String(PocketStorage.get_setting("stick_side", "left")) == "left"
+	var direction_x: float = zone.position.x if left_side else zone.end.x - control_size
+	_dpad_rect = Rect2(Vector2(direction_x, zone.position.y + (zone.size.y - control_size) * 0.5).floor(), Vector2(control_size, control_size))
+	dpad.position = _dpad_rect.position
+	dpad.size = _dpad_rect.size
+	_place_stick(_dpad_rect)
+	var action_x: float = zone.end.x - control_size * 0.58 if left_side else zone.position.x + control_size * 0.58
+	var cluster_center := Vector2(action_x, zone.position.y + zone.size.y * 0.48)
+	var primary_size: float = floor(clamp(control_size * 0.30, 54.0, 82.0))
+	var secondary_size: float = floor(primary_size * 0.84)
+	var spacing: float = floor(primary_size * 0.78)
+	_place_action_center(PocketInput.X, cluster_center + Vector2(0, -spacing), secondary_size)
+	_place_action_center(PocketInput.Y, cluster_center + Vector2(-spacing, 0), secondary_size)
+	_place_action_center(PocketInput.A, cluster_center + Vector2(spacing, 0), primary_size)
+	_place_action_center(PocketInput.B, cluster_center + Vector2(0, spacing), primary_size)
+	_action_cluster_rect = Rect2(cluster_center - Vector2(spacing * 1.6, spacing * 1.6), Vector2(spacing * 3.2, spacing * 3.2))
+	var sys_w: float = floor(clamp(zone.size.x * 0.19, 66.0, 94.0))
+	var sys_h: float = floor(clamp(zone.size.y * 0.10, 38.0, 48.0))
+	var sys_gap: float = floor(clamp(zone.size.x * 0.05, 16.0, 30.0))
+	var sys_x: float = floor(zone.position.x + (zone.size.x - sys_w * 2.0 - sys_gap) * 0.5)
+	var sys_y: float = floor(zone.end.y - sys_h)
+	_menu_rect = Rect2(Vector2(sys_x, sys_y), Vector2(sys_w, sys_h))
+	_back_rect = Rect2(Vector2(sys_x + sys_w + sys_gap, sys_y), Vector2(sys_w, sys_h))
+	system_buttons[PocketInput.MENU].position = _menu_rect.position
+	system_buttons[PocketInput.MENU].size = _menu_rect.size
+	system_buttons[PocketInput.EXIT].position = _back_rect.position
+	system_buttons[PocketInput.EXIT].size = _back_rect.size
+	queue_redraw()
+
+
+func _place_stick(direction_rect: Rect2) -> void:
+	var scale_factor: float = clampf(float(PocketStorage.get_setting("stick_size", 1.0)), 0.8, 1.3)
+	var stick_size: Vector2 = (direction_rect.size * scale_factor).floor()
+	stick.position = (direction_rect.get_center() - stick_size * 0.5).floor()
+	stick.size = stick_size
+
+
 func _place_action_center(button: String, center: Vector2, visual_size: float) -> void:
 	var control: Control = action_buttons[button]
 	var touch_size: float = floor(maxf(MIN_TOUCH_TARGET, visual_size + ACTION_TOUCH_PAD))
@@ -226,13 +302,7 @@ func _place_action_center(button: String, center: Vector2, visual_size: float) -
 
 
 func _get_safe_rect(window_size: Vector2) -> Rect2:
-	var rect: Rect2 = Rect2(Vector2.ZERO, window_size)
-	var display_safe: Rect2i = DisplayServer.get_display_safe_area()
-	if display_safe.size.x > 0 and display_safe.size.y > 0 and display_safe.size.x <= window_size.x * 1.1:
-		rect = Rect2(display_safe.position, display_safe.size)
-	if OS.has_feature("android"):
-		rect = rect.grow_individual(0, -4, 0, -8)
-	return rect
+	return LayoutMetrics.safe_rect(window_size)
 
 
 func _draw() -> void:
@@ -258,8 +328,8 @@ func _draw_case(p: Dictionary) -> void:
 	draw_rect(Rect2(_console_rect.position + Vector2(6, 6), _console_rect.size - Vector2(12, 12)), p["case_mid"], false, 1)
 
 	var header_y: float = _console_rect.position.y + 14.0
-	PixelFont.draw_text(self, Vector2(_console_rect.position.x + 24, header_y), "OPENPOCKET", p["hi"], 3)
-	PixelFont.draw_text(self, Vector2(_console_rect.end.x - 130, header_y + 7), "REV 02", p["case_light"], 1)
+	PixelFont.draw_text(self, Vector2(_console_rect.position.x + 24, header_y), BrandConfig.PRODUCT_NAME.to_upper(), p["hi"], 2)
+	PixelFont.draw_text(self, Vector2(_console_rect.end.x - 130, header_y + 7), "REBORN", p["case_light"], 1)
 	draw_rect(Rect2(Vector2(_console_rect.end.x - 54, header_y + 4), Vector2(12, 12)), p["hi"], true)
 	PixelFont.draw_text(self, Vector2(_console_rect.end.x - 36, header_y + 4), "PWR", p["case_light"], 1)
 

@@ -4,6 +4,27 @@ This project follows the structure of [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.5.0] - Reborn
+
+### Added
+- Central PopugVPocket brand system and project-authored V-Parrot pixel assets.
+- VBoy portrait and VGirl landscape console profiles around `PocketScreen` 400x320.
+- Configurable pixel D-pad, fixed stick, and floating stick controls.
+- PopugVPocket Cartridge Format v2 and approved-only catalog schema v2.
+- Manual safe-data legacy backup importer in Developer Mode.
+- Built-in reworked Breakout cartridge.
+
+### Changed
+- Renamed the product from OpenPocket to PopugVPocket by Popugonet.
+- Changed Android application id to `org.popugonet.popugvpocket`.
+- Migrated built-in cartridge ids to `org.popugonet.popugvpocket.*`.
+
+### Removed
+- OpenPocket cartridge format v1 compatibility and automatic old-sandbox migration assumptions.
+
+### Security
+- External cartridge code remains unsandboxed. Catalog review and SHA-256 verification are not isolation.
+
 ## [0.4.0] - In development
 
 ### Added

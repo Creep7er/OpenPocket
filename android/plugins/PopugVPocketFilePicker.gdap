@@ -1,0 +1,11 @@
+[config]
+
+name="PopugVPocketFilePicker"
+binary_type="local"
+binary="PopugVPocketFilePicker.aar"
+
+[dependencies]
+
+local=[]
+remote=[]
+custom_maven_repos=[]

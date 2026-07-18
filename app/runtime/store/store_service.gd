@@ -1,19 +1,44 @@
 extends Node
 
 const LocalStoreProvider := preload("res://app/runtime/store/local_store_provider.gd")
+const GitHubCatalogProvider := preload("res://app/runtime/store/github_catalog_provider.gd")
 const Trust := preload("res://app/runtime/cartridges/cartridge_trust.gd")
 
-var _provider := LocalStoreProvider.new()
+signal catalog_changed
+signal download_ready(result: Dictionary)
+
+var _provider: Node
+var _fallback := LocalStoreProvider.new()
 var _catalog: Array[Dictionary] = []
 var _loaded := false
+var _status := "updating"
 
 
 func _ready() -> void:
+	_provider = GitHubCatalogProvider.new()
+	add_child(_provider)
+	_provider.catalog_updated.connect(_on_catalog_updated)
+	_provider.download_finished.connect(_on_download_finished)
 	refresh()
 
 
-func refresh() -> Dictionary:
+func refresh(force: bool = false) -> Dictionary:
 	var result: Dictionary = _provider.fetch_catalog()
+	if not bool(result.get("ok", false)):
+		result = _fallback.fetch_catalog()
+		_status = "offline cache"
+	else:
+		_status = "offline cache" if bool(result.get("cached", false)) else "online"
+	_apply_catalog(result)
+	_provider.refresh_catalog(force)
+	return result
+
+
+func status_label() -> String:
+	return _status.to_upper()
+
+
+func _apply_catalog(result: Dictionary) -> void:
 	_catalog.clear()
 	_loaded = true
 	if bool(result.get("ok", false)):
@@ -33,7 +58,17 @@ func refresh() -> Dictionary:
 		_catalog.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			return String(a.get("name", "")) < String(b.get("name", ""))
 		)
-	return result
+	catalog_changed.emit()
+
+
+func _on_catalog_updated(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		_status = "offline cache" if bool(result.get("cached", false)) else "online"
+		_apply_catalog(result)
+	elif not _catalog.is_empty():
+		_status = "offline cache"
+	else:
+		_status = "unavailable"
 
 
 func list_catalog() -> Array[Dictionary]:
@@ -107,12 +142,19 @@ static func compare_versions(left: String, right: String) -> int:
 
 
 func download_to_imports(cartridge_id: String, version: String = "") -> Dictionary:
-	var download_result: Dictionary = _provider.download(cartridge_id, version)
+	var item: Dictionary = {}
+	for candidate in _catalog:
+		if String(candidate.get("id", "")) == cartridge_id and (version.is_empty() or String(candidate.get("version", "")) == version):
+			item = candidate
+			break
+	if not item.is_empty() and not Dictionary(item.get("release", {})).is_empty():
+		return _provider.download_cartridge(item)
+	var download_result: Dictionary = _fallback.download(cartridge_id, version)
 	if not bool(download_result.get("ok", false)):
 		return download_result
 	var path := String(download_result.get("path", ""))
-	var item: Dictionary = Dictionary(download_result.get("item", {}))
-	var expected_sha := String(item.get("sha256", "")).to_lower()
+	var local_item: Dictionary = Dictionary(download_result.get("item", {}))
+	var expected_sha := String(local_item.get("sha256", "")).to_lower()
 	if not expected_sha.is_empty():
 		var actual_sha := FileAccess.get_sha256(path).to_lower()
 		if actual_sha != expected_sha:
@@ -121,6 +163,12 @@ func download_to_imports(cartridge_id: String, version: String = "") -> Dictiona
 		"ok": true,
 		"error": "ok",
 		"path": path,
-		"trust": Trust.TRUSTED if bool(item.get("curated", false)) else Trust.UNTRUSTED,
-		"item": item,
+		"trust": Trust.TRUSTED if bool(local_item.get("curated", false)) else Trust.UNTRUSTED,
+		"item": local_item,
 	}
+
+
+func _on_download_finished(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		result["trust"] = Trust.TRUSTED
+	download_ready.emit(result)

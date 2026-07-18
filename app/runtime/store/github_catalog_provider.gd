@@ -1,0 +1,126 @@
+extends Node
+
+signal catalog_updated(result: Dictionary)
+signal download_finished(result: Dictionary)
+
+const Cache := preload("res://app/runtime/store/catalog_cache.gd")
+const Paths := preload("res://app/runtime/cartridges/cartridge_paths.gd")
+const DEFAULT_URL := "https://raw.githubusercontent.com/Creep7er/openpocket-catalog/main/catalog.json"
+const MAX_CATALOG_BYTES := 2 * 1024 * 1024
+const MAX_ENTRIES := 2000
+
+var catalog_url := DEFAULT_URL
+var _cache := Cache.new()
+var _request: HTTPRequest
+var _download: HTTPRequest
+var _metadata: Dictionary = {}
+var _download_item: Dictionary = {}
+var _download_path := ""
+
+
+func _ready() -> void:
+	_request = HTTPRequest.new()
+	_request.timeout = 15.0
+	_request.max_redirects = 5
+	_request.request_completed.connect(_on_catalog_completed)
+	add_child(_request)
+	_download = HTTPRequest.new()
+	_download.timeout = 15.0
+	_download.max_redirects = 5
+	_download.request_completed.connect(_on_download_completed)
+	add_child(_download)
+
+
+func fetch_catalog() -> Dictionary:
+	var cached := _cache.load_cache()
+	_metadata = Dictionary(cached.get("metadata", {}))
+	var parsed := _parse_catalog(Dictionary(cached.get("catalog", {})))
+	if bool(parsed.get("ok", false)):
+		parsed["cached"] = true
+		parsed["saved_at"] = String(cached.get("saved_at", ""))
+	return parsed
+
+
+func refresh_catalog(force: bool = false) -> Dictionary:
+	if _request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		return {"ok": false, "error": "busy", "pending": true}
+	if not catalog_url.begins_with("https://") or "@" in catalog_url:
+		return {"ok": false, "error": "invalid_catalog_url"}
+	var headers := PackedStringArray(["Accept: application/json", "User-Agent: OpenPocket/0.4.0"])
+	if not force:
+		if not String(_metadata.get("etag", "")).is_empty(): headers.append("If-None-Match: " + String(_metadata["etag"]))
+		if not String(_metadata.get("last_modified", "")).is_empty(): headers.append("If-Modified-Since: " + String(_metadata["last_modified"]))
+	var error := _request.request(catalog_url, headers, HTTPClient.METHOD_GET)
+	return {"ok": error == OK, "error": "pending" if error == OK else "network_error", "pending": error == OK}
+
+
+func download_cartridge(item: Dictionary) -> Dictionary:
+	var release := Dictionary(item.get("release", {}))
+	var url := String(release.get("download_url", ""))
+	if not (url.begins_with("https://github.com/") or url.begins_with("https://objects.githubusercontent.com/")):
+		return {"ok": false, "error": "download_unavailable"}
+	if _download.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		return {"ok": false, "error": "busy"}
+	Paths.ensure()
+	_download_item = item.duplicate(true)
+	_download_path = Paths.download_path(String(item.get("id", "cartridge")) + "-" + String(item.get("version", "")) + ".pctrg")
+	_download.download_file = _download_path
+	var error := _download.request(url, PackedStringArray(["User-Agent: OpenPocket/0.4.0"]), HTTPClient.METHOD_GET)
+	return {"ok": error == OK, "error": "pending" if error == OK else "network_error", "pending": error == OK}
+
+
+func _on_catalog_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	if response_code == 304:
+		catalog_updated.emit(fetch_catalog()); return
+	if result != HTTPRequest.RESULT_SUCCESS or response_code < 200 or response_code >= 300:
+		var fallback := fetch_catalog(); fallback["error"] = "network_error"; catalog_updated.emit(fallback); return
+	if body.size() > MAX_CATALOG_BYTES:
+		catalog_updated.emit({"ok": false, "error": "catalog_too_large", "items": []}); return
+	var parsed_json: Variant = JSON.parse_string(body.get_string_from_utf8())
+	if typeof(parsed_json) != TYPE_DICTIONARY:
+		catalog_updated.emit({"ok": false, "error": "invalid_catalog", "items": []}); return
+	var parsed := _parse_catalog(Dictionary(parsed_json))
+	if not bool(parsed.get("ok", false)):
+		catalog_updated.emit(parsed); return
+	_metadata = _response_metadata(headers)
+	_cache.save_cache(Dictionary(parsed_json), _metadata)
+	parsed["cached"] = false
+	catalog_updated.emit(parsed)
+
+
+func _on_download_completed(result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
+	var response := {"ok": false, "error": "network_error", "path": _download_path, "item": _download_item}
+	if result == HTTPRequest.RESULT_SUCCESS and response_code >= 200 and response_code < 300 and FileAccess.file_exists(_download_path):
+		var expected := String(Dictionary(_download_item.get("release", {})).get("sha256", "")).to_lower()
+		var actual := FileAccess.get_sha256(_download_path).to_lower()
+		response = {"ok": expected.length() == 64 and expected == actual, "error": "ok" if expected == actual else "archive_checksum_mismatch", "path": _download_path, "item": _download_item}
+	download_finished.emit(response)
+
+
+func _parse_catalog(catalog: Dictionary) -> Dictionary:
+	if int(catalog.get("schema_version", 0)) != 1: return {"ok": false, "error": "invalid_schema", "items": []}
+	var packages := Array(catalog.get("packages", []))
+	if packages.size() > MAX_ENTRIES: return {"ok": false, "error": "too_many_entries", "items": []}
+	var items: Array[Dictionary] = []
+	var ids: Dictionary = {}
+	for value in packages:
+		if typeof(value) != TYPE_DICTIONARY: return {"ok": false, "error": "invalid_entry", "items": []}
+		var item := Dictionary(value).duplicate(true)
+		var cartridge_id := String(item.get("id", ""))
+		if cartridge_id.is_empty() or ids.has(cartridge_id): return {"ok": false, "error": "duplicate_id", "items": []}
+		ids[cartridge_id] = true
+		item["author"] = String(Dictionary(item.get("author", {})).get("name", "Unknown"))
+		item["sha256"] = String(Dictionary(item.get("release", {})).get("sha256", ""))
+		items.append(item)
+	return {"ok": true, "error": "ok", "items": items}
+
+
+func _response_metadata(headers: PackedStringArray) -> Dictionary:
+	var result: Dictionary = {}
+	for header in headers:
+		var split := header.split(":", true, 1)
+		if split.size() != 2: continue
+		var key := split[0].strip_edges().to_lower()
+		if key == "etag": result["etag"] = split[1].strip_edges()
+		elif key == "last-modified": result["last_modified"] = split[1].strip_edges()
+	return result

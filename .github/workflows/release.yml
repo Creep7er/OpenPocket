@@ -42,6 +42,10 @@ jobs:
     env:
       GODOT_VERSION: 4.7-stable
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
+      XDG_CONFIG_HOME: ${{ runner.temp }}/godot-config
+      GODOT_ANDROID_KEYSTORE_DEBUG_PATH: ${{ runner.temp }}/debug.keystore
+      GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+      GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -93,6 +97,7 @@ jobs:
           unzip -q cmdline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
           mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-36" "build-tools;35.0.1"
+          keytool -genkeypair -v -keystore "$GODOT_ANDROID_KEYSTORE_DEBUG_PATH" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
       - name: Install Godot and templates
         run: |
           curl --fail --location --output godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
@@ -102,6 +107,7 @@ jobs:
           mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
           unzip -q templates.tpz -d template-extract
           cp -R template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
+          python tools/configure_ci_android.py
           "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --editor --quit --path . --install-android-build-template
       - name: Essential checks
         run: |

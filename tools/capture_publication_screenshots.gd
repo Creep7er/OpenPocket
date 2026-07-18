@@ -44,6 +44,9 @@ func _capture_shell_screens() -> void:
 	app.shell_view.show_home()
 	await _capture("home.png")
 	await _capture("vboy-home.png")
+	app.call("_open_system_menu")
+	await _capture("system-menu.png")
+	app.call("_close_system_menu")
 
 	var packages: Array[Dictionary] = PocketPackages.get_packages()
 	app.shell_view.show_library(packages)
@@ -58,21 +61,38 @@ func _capture_shell_screens() -> void:
 	var fixture := ProjectSettings.globalize_path("res://store/test_fixtures/org.popugonet.popugvpocket.pixelclock-1.0.0.pctrg")
 	app.shell_view.call("_prepare_external_install", fixture)
 	await _capture("install-cartridge.png")
+	await _capture("vboy-install.png")
 	PocketStorage.set_setting("developer_mode", true)
 
 	app.shell_view.show_store()
 	await _capture("store.png")
 	await _capture("vboy-store.png")
+	app.shell_view.screen = "store_download"
+	app.shell_view.items.clear()
+	app.shell_view.items.append({"label": "Cancel", "action": "cancel_download"})
+	app.shell_view.call("_on_store_download_state_changed", {"state": "downloading", "progress": 0.74, "item": {"name": "Pixel Clock"}})
+	await _capture("store-download.png")
+	app.shell_view.show_settings()
+	app.shell_view.call("_show_customize")
+	await _capture("customize-themes.png")
+	app.shell_view.show_home()
+	app.call("_on_achievement_unlocked", "org.popugonet.popugvpocket.snake:first_meal", {"name": "First Meal", "description": "Eat the first fruit."})
+	await _capture("achievement-unlocked.png")
+	if app.achievement_popup != null:
+		app.achievement_popup.free()
+		app.achievement_popup = null
 	PocketStorage.set_setting("direction_control", "dpad")
 	await _capture("controls-dpad.png")
 
 
 func _capture_builtin_screens() -> void:
 	await _launch_builtin("org.popugonet.popugvpocket.snake")
+	await _capture("snake-menu.png")
 	app.active_game.call("_start_game")
 	await _capture("snake.png")
 
 	await _launch_builtin("org.popugonet.popugvpocket.pong")
+	await _capture("pong-menu.png")
 	app.active_game.call("_start_match")
 	await _capture("pong.png")
 
@@ -92,8 +112,12 @@ func _capture_breakout() -> void:
 	CartridgeAudio.begin_scope("org.popugonet.popugvpocket.breakout")
 	app.console_frame.set_screen(breakout)
 	await _wait_frames(3)
+	await _capture("breakout-menu.png")
 	breakout.call("_start_game")
 	breakout.call("_serve_ball")
+	breakout.screen = "quit"
+	await _capture("breakout-dialog.png")
+	breakout.screen = "playing"
 	await _capture("breakout.png")
 
 
@@ -108,6 +132,12 @@ func _capture_landscape_profile() -> void:
 	await _capture("vgirl-home.png")
 	app.shell_view.show_library(PocketPackages.get_packages())
 	await _capture("vgirl-library.png")
+	app.shell_view.show_store()
+	await _capture("vgirl-store.png")
+	app.shell_view.show_settings()
+	await _capture("vgirl-settings.png")
+	app.shell_view.show_home()
+	await _capture("vgirl-controls.png")
 	PocketStorage.set_setting("direction_control", "stick")
 	PocketStorage.set_setting("stick_mode", "fixed")
 	await _capture("controls-fixed-stick.png")
@@ -162,18 +192,22 @@ func _capture(filename: String) -> void:
 
 
 func _build_hero() -> void:
-	var names: Array[String] = ["home.png", "library.png", "breakout.png"]
-	var gap := 12
 	var border := 16
-	var hero_size := Vector2i(CAPTURE_SIZE.x * names.size() + gap * (names.size() - 1) + border * 2, CAPTURE_SIZE.y + border * 2)
+	var gap := 12
+	var hero_size := Vector2i(CAPTURE_SIZE.x + gap + LANDSCAPE_SIZE.x + border * 2, CAPTURE_SIZE.y + border * 2)
 	var hero := Image.create(hero_size.x, hero_size.y, false, Image.FORMAT_RGBA8)
 	hero.fill(Color("162317"))
-	for index in names.size():
-		var source := Image.load_from_file(OUTPUT_DIR.path_join(names[index]))
-		source.convert(Image.FORMAT_RGBA8)
-		var position := Vector2i(border + index * (CAPTURE_SIZE.x + gap), border)
-		hero.blit_rect(source, Rect2i(Vector2i.ZERO, CAPTURE_SIZE), position)
-	var result := hero.save_png(OUTPUT_DIR.path_join("popugvpocket-hero.png"))
+	var vboy := Image.load_from_file(OUTPUT_DIR.path_join("vboy-home.png"))
+	var vgirl := Image.load_from_file(OUTPUT_DIR.path_join("vgirl-home.png"))
+	var mascot := Image.load_from_file("res://app/assets/branding/v-parrot-idle.png")
+	vboy.convert(Image.FORMAT_RGBA8)
+	vgirl.convert(Image.FORMAT_RGBA8)
+	mascot.convert(Image.FORMAT_RGBA8)
+	hero.blit_rect(vboy, Rect2i(Vector2i.ZERO, CAPTURE_SIZE), Vector2i(border, border))
+	hero.blit_rect(vgirl, Rect2i(Vector2i.ZERO, LANDSCAPE_SIZE), Vector2i(border + CAPTURE_SIZE.x + gap, border))
+	var mascot_position := Vector2i(border + CAPTURE_SIZE.x + gap + (LANDSCAPE_SIZE.x - mascot.get_width()) / 2, border + LANDSCAPE_SIZE.y + 42)
+	hero.blend_rect(mascot, Rect2i(Vector2i.ZERO, mascot.get_size()), mascot_position)
+	var result := hero.save_png(OUTPUT_DIR.path_join("popugvpocket-0.5.1-hero.png"))
 	if result != OK:
 		push_error("Could not save hero image")
 		get_tree().quit(1)

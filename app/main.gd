@@ -3,6 +3,7 @@ extends Control
 const ConsoleFrameScene := preload("res://app/ui/console_frame.gd")
 const ShellViewScene := preload("res://app/shell/shell_view.gd")
 const SystemMenuScene := preload("res://app/shell/system_menu.gd")
+const AchievementPopupScene := preload("res://app/ui/achievement_popup.gd")
 
 var console_frame: Control
 var shell_view: Control
@@ -10,6 +11,7 @@ var system_menu: Control
 var active_game: Node
 var active_package: Dictionary = {}
 var current_route := "home"
+var achievement_popup: Control
 
 
 func _ready() -> void:
@@ -22,6 +24,7 @@ func _ready() -> void:
 	PocketPackages.load_builtin_packages()
 	PocketRouter.route_changed.connect(_on_route_changed)
 	PocketRouter.system_menu_requested.connect(_open_system_menu)
+	AchievementManager.achievement_unlocked.connect(_on_achievement_unlocked)
 	_build_console()
 	PocketRouter.go_home()
 
@@ -124,6 +127,15 @@ func _open_system_menu() -> void:
 	system_menu.exit_requested.connect(_open_exit_confirmation)
 	console_frame.show_screen_overlay(system_menu)
 	PocketAudio.pause()
+
+
+func _on_achievement_unlocked(_scoped_id: String, definition: Dictionary) -> void:
+	if achievement_popup != null and is_instance_valid(achievement_popup):
+		achievement_popup.queue_free()
+	achievement_popup = AchievementPopupScene.new()
+	achievement_popup.setup(definition)
+	console_frame.screen_viewport.add_child(achievement_popup)
+	PocketAudio.select()
 
 
 func _open_exit_confirmation() -> void:

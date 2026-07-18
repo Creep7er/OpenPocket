@@ -1,6 +1,6 @@
 {
   "id": "org.popugonet.popugvpocket.breakout", "name": "Breakout Mini", "version": "1.0.1", "type": "game",
-  "entry_scene": "main.tscn", "sdk_version": "0.5.0", "author": "PopugVPocket Examples",
+  "entry_scene": "main.tscn", "sdk_version": "0.5.1", "author": "PopugVPocket Examples",
   "description": "Compact controller-only brick breaker.", "category": "arcade",
   "capabilities": ["storage", "audio", "theme", "system_menu"]
 }

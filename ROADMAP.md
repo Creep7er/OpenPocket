@@ -1,29 +1,20 @@
 # Roadmap
 
-PopugVPocket does not promise release dates. This roadmap separates current behavior from planned platform work.
+## 0.5.x
 
-## Current Development: 0.5.0
+- Android device testing across VBoy and VGirl.
+- Store UX and interrupted-download stabilization.
+- Publish and moderate additional catalog cartridges.
+- Accessibility, localization, and profile polish.
 
-- Responsive Android-first Shell and pixel-perfect virtual screen.
-- Trusted built-in Snake, Pocket Pong, and Pocket Notes cartridges.
-- GitHub-hosted catalog, offline cache, local achievements, and cosmetic Reward Vault.
-- Package-scoped storage and audio ownership.
-- Compact debug APK and unsigned AAB export presets.
+## 0.6
 
-## Stabilization: 0.4.x
+- Publisher signatures and trusted keys.
+- Stronger capability enforcement.
+- Cartridge update migration tooling.
 
-- More curated catalog entries, accessibility work, and achievements UX improvements.
-- Expand real-device Android and offline/error-path testing.
+## 1.0
 
-## Next: 0.5
-
-- Cartridge signatures and publisher keys.
-- Stronger capability enforcement and catalog trust policy.
-
-## Later: 1.0
-
-- Stable cartridge API and documented compatibility policy.
-- Secure, reviewable distribution model for third-party cartridges.
-- Production Android release and signing pipeline.
-
-See [SECURITY.md](SECURITY.md) for the current trust limitations and [ARCHITECTURE.md](ARCHITECTURE.md) for possible isolation approaches.
+- Stable SDK and compatibility policy.
+- Production signing and distribution process.
+- Documented long-term cartridge support window.

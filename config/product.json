@@ -1,0 +1,12 @@
+{
+  "product": "PopugVPocket",
+  "version": "0.5.1",
+  "sdk_version": "0.5.1",
+  "android": {
+    "package_id": "org.popugonet.popugvpocket",
+    "version_code": 7
+  },
+  "cartridge_format": 2,
+  "catalog_schema": 2,
+  "catalog_url": "https://raw.githubusercontent.com/Creep7er/openpocket-catalog/main/catalog.json"
+}

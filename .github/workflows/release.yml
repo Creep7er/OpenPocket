@@ -1,0 +1,146 @@
+name: Release Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version from config/product.json
+        required: true
+        default: 0.5.1
+      mode:
+        description: Signing mode
+        required: true
+        type: choice
+        options:
+          - debug-prerelease
+          - production
+      prerelease:
+        description: Mark release as prerelease
+        required: true
+        type: boolean
+        default: true
+      draft:
+        description: Create a draft GitHub Release
+        required: true
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      GODOT_VERSION: 4.7-stable
+      ANDROID_HOME: ${{ github.workspace }}/android-sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Resolve release settings
+        id: release
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+            mode="production"
+            draft="false"
+            prerelease="false"
+          else
+            version="${{ inputs.version }}"
+            mode="${{ inputs.mode }}"
+            draft="${{ inputs.draft }}"
+            prerelease="${{ inputs.prerelease }}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "draft=$draft" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+      - name: Validate version
+        run: |
+          python tools/validate_version.py
+          python -c "import json; from pathlib import Path; actual=json.loads(Path('config/product.json').read_text())['version']; expected='${{ steps.release.outputs.version }}'; raise SystemExit(0 if actual == expected else f'version mismatch: {actual} != {expected}')"
+      - name: Validate production signing secrets
+        if: steps.release.outputs.mode == 'production'
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          test -n "$KEYSTORE" || { echo "ANDROID_KEYSTORE_BASE64 is required for production"; exit 1; }
+          test -n "$STORE_PASSWORD" || { echo "ANDROID_KEYSTORE_PASSWORD is required for production"; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "ANDROID_KEY_ALIAS is required for production"; exit 1; }
+          echo "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/popugvpocket.keystore"
+          python tools/configure_android_signing.py --keystore "$RUNNER_TEMP/popugvpocket.keystore" --alias "$KEY_ALIAS" --password "$STORE_PASSWORD"
+      - name: Install Android SDK
+        run: |
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl --fail --location --output cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q cmdline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+          mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-36" "build-tools;35.0.1"
+      - name: Install Godot and templates
+        run: |
+          curl --fail --location --output godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x "Godot_v${GODOT_VERSION}_linux.x86_64"
+          curl --fail --location --output templates.tpz "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
+          unzip -q templates.tpz -d template-extract
+          cp -R template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
+          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --install-android-build-template
+      - name: Essential checks
+        run: |
+          python tools/validate_project.py
+          python tools/test_install_flow.py
+          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --editor --path . --quit
+          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . res://tools/smoke_runner.tscn
+          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . res://tools/vgirl_layout_audit.tscn
+      - name: Build Android artifacts
+        shell: bash
+        run: |
+          version="${{ steps.release.outputs.version }}"
+          if [[ "${{ steps.release.outputs.mode }}" == "production" ]]; then
+            apk="exports/android/popugvpocket-${version}.apk"
+            "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Compact Debug" "$apk"
+          else
+            apk="exports/android/popugvpocket-${version}-debug.apk"
+            "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-debug "Android Compact Debug" "$apk"
+          fi
+          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Bundle" "exports/android/popugvpocket-${version}.aab"
+          sha256sum exports/android/* > exports/android/SHA256SUMS.txt
+      - name: Inspect APK
+        run: |
+          apk=$(find exports/android -name '*.apk' -print -quit)
+          "$ANDROID_HOME/build-tools/35.0.1/aapt" dump badging "$apk" | head -n 3
+          python tools/analyze_apk.py "$apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: popugvpocket-${{ steps.release.outputs.version }}-${{ steps.release.outputs.mode }}
+          path: |
+            exports/android/*.apk
+            exports/android/*.aab
+            exports/android/SHA256SUMS.txt
+          retention-days: 14
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag' || inputs.draft == true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.release.outputs.version }}
+          body_path: docs/releases/0.5.1.md
+          draft: ${{ steps.release.outputs.draft }}
+          prerelease: ${{ steps.release.outputs.mode == 'debug-prerelease' || steps.release.outputs.prerelease == 'true' }}
+          files: |
+            exports/android/*.apk
+            exports/android/*.aab
+            exports/android/SHA256SUMS.txt

@@ -4,6 +4,27 @@ This project follows the structure of [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-18
+
+### Added
+- Added bounded Store download jobs with progress, cancellation, `.part` staging, checksum verification, and atomic completion.
+- Added Store update, reinstall, repair, and explicit uninstall flows.
+- Added Android APK/AAB/checksum release workflow with debug-prerelease and production modes.
+- Added cartridge-template release workflows and catalog entry generators.
+- Added runtime VGirl layout audit and selectable screenshot preview tools.
+
+### Changed
+- Reworked VGirl as a landscape `directions | display | actions` console with wider thumb-zone separation.
+- Replaced XYAB inner squares with stepped octagonal faces and pixel edge highlights.
+- Replaced the crowded Android adaptive foreground with a padded V-Parrot emblem.
+- Updated runtime, SDK, Android metadata, and catalog minimum to 0.5.1.
+- Switched production catalog configuration to the existing `Creep7er/openpocket-catalog` repository.
+
+### Fixed
+- Constrained Breakout Leave Round selection rows to the modal panel in built-in and installable sources.
+- Added reproducible menu screenshots covering Shell, system overlay, Snake, Pong, Notes, and Breakout states.
+- Preserved broken registry records so Store can offer repair instead of silently deleting them.
+
 ## [0.5.0] - Reborn
 
 ### Added

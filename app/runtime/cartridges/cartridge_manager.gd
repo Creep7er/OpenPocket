@@ -113,13 +113,21 @@ func verify(cartridge_id: String) -> Dictionary:
 	if bool(record.get("built_in", false)):
 		return {"ok": true, "error": "ok", "trust": Trust.BUILT_IN}
 	var content_path := String(record.get("content_path", ""))
+	var manifest_path := String(record.get("manifest_path", ""))
+	if not FileAccess.file_exists(manifest_path):
+		return {"ok": false, "error": "manifest_missing"}
 	var expected_sha := String(Dictionary(record.get("content", {})).get("sha256", "")).to_lower()
 	if not FileAccess.file_exists(content_path):
 		return {"ok": false, "error": "content_missing"}
 	var actual_sha := FileAccess.get_sha256(content_path).to_lower()
+	if expected_sha != actual_sha:
+		return {"ok": false, "error": "checksum_mismatch", "expected": expected_sha, "actual": actual_sha}
+	var entry_scene := String(record.get("entry_scene", ""))
+	if entry_scene.is_empty():
+		return {"ok": false, "error": "entry_scene_missing"}
 	return {
-		"ok": expected_sha == actual_sha,
-		"error": "ok" if expected_sha == actual_sha else "checksum_mismatch",
+		"ok": true,
+		"error": "ok",
 		"expected": expected_sha,
 		"actual": actual_sha,
 	}

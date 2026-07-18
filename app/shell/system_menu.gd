@@ -14,6 +14,7 @@ var confirm_exit := false
 var selected_index := 0
 var items: Array[Dictionary] = []
 var cursor_tick := 0.0
+var ui_scale := 1
 
 
 func _ready() -> void:
@@ -65,7 +66,7 @@ func _draw() -> void:
 	draw_rect(panel, p["dark"], true)
 	draw_rect(panel, p["hi"], false, 2)
 	draw_rect(Rect2(panel.position + Vector2(6, 6), panel.size - Vector2(12, 12)), p["mid"], false, 2)
-	var title := "EXIT %s?" % BrandConfig.product_name.to_upper() if confirm_exit else "PAUSED" if has_active_game else "SYSTEM"
+	var title := "EXIT %s?" % BrandConfig.PRODUCT_NAME.to_upper() if confirm_exit else "PAUSED" if has_active_game else "SYSTEM"
 	PixelFont.draw_text(self, panel.position + Vector2(18, 18), title, p["hi"], 2)
 	var y := int(panel.position.y + 60)
 	for index in range(items.size()):
@@ -76,8 +77,13 @@ func _draw() -> void:
 			draw_rect(row, p["hi"], false, 2)
 		var cursor := ">" if selected and int(cursor_tick * 5.0) % 2 == 0 else " "
 		var color: Color = p["dark"] if selected else p["hi"]
-		PixelFont.draw_text(self, Vector2(panel.position.x + 24, y), cursor + " " + String(items[index]["label"]).to_upper(), color, 1)
+		PixelFont.draw_text(self, Vector2(panel.position.x + 24, y), cursor + " " + String(items[index]["label"]).to_upper(), color, ui_scale)
 		y += 24
+
+
+func set_ui_scale(value: int) -> void:
+	ui_scale = clampi(value, 1, 2)
+	queue_redraw()
 
 
 func _activate() -> void:

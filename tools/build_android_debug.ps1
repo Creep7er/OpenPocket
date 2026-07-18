@@ -1,5 +1,5 @@
 param(
-    [string]$Output = "exports/android/popugvpocket-0.5.0-development.apk",
+    [string]$Output = "exports/android/popugvpocket-0.5.1-development.apk",
     [string]$Preset = "Android Debug",
     [string]$Godot = "",
     [string]$JavaHome = "",

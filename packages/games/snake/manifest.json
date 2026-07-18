@@ -1,10 +1,10 @@
 {
   "id": "org.popugonet.popugvpocket.snake",
   "name": "Snake",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "game",
   "entry_scene": "main.tscn",
-  "sdk_version": "0.5.0",
+  "sdk_version": "0.5.1",
   "author": "PopugVPocket Contributors",
   "description": "Classic Snake for PopugVPocket.",
   "category": "arcade",

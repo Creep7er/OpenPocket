@@ -25,9 +25,9 @@ func load() -> void:
 		record["install_path"] = expected_path
 		record["content_path"] = expected_path.path_join("content.pck")
 		record["manifest_path"] = expected_path.path_join("cartridge.json")
-		if not FileAccess.file_exists(String(record["content_path"])):
-			push_warning("Removing broken cartridge registry entry: " + cartridge_id)
-			continue
+		record["broken"] = not FileAccess.file_exists(String(record["content_path"])) or not FileAccess.file_exists(String(record["manifest_path"]))
+		if bool(record["broken"]):
+			push_warning("Preserving broken cartridge registry entry for repair: " + cartridge_id)
 		_records[cartridge_id] = record
 	save()
 

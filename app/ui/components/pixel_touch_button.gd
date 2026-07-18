@@ -19,7 +19,7 @@ func setup(text: String, pocket_button: String, is_compact: bool = false, is_pri
 	button = pocket_button
 	compact = is_compact
 	primary = is_primary
-	custom_minimum_size = Vector2(94, 44) if compact else Vector2(86, 86)
+	custom_minimum_size = Vector2(82, 40) if compact else Vector2(56, 56)
 	queue_redraw()
 
 
@@ -70,7 +70,7 @@ func _draw_compact_button(rect: Rect2, p: Dictionary) -> void:
 
 
 func _draw_stepped_button(rect: Rect2, p: Dictionary) -> void:
-	var inset: float = floor(min(rect.size.x, rect.size.y) * 0.18)
+	var inset: float = floor(min(rect.size.x, rect.size.y) * 0.24)
 	var points: PackedVector2Array = PackedVector2Array([
 		Vector2(rect.position.x + inset, rect.position.y),
 		Vector2(rect.position.x + rect.size.x - inset, rect.position.y),
@@ -86,16 +86,20 @@ func _draw_stepped_button(rect: Rect2, p: Dictionary) -> void:
 		for point in points:
 			shadow.append(point + Vector2(4, 4))
 		draw_colored_polygon(shadow, p["dark"])
-	draw_colored_polygon(points, p["case_mid"] if primary else p["case_light"])
+	var emphasized := primary or bool(get_meta("uniform_style", false))
+	draw_colored_polygon(points, p["case_mid"] if emphasized else p["case_light"])
 	draw_polyline(points + PackedVector2Array([points[0]]), p["dark"], 3.0)
-	var inner: Rect2 = rect.grow(-7)
-	draw_rect(inner, p["case_light"] if primary else p["case_mid"], false, 2)
+	var highlight: Color = p["case_light"] if emphasized else p["hi"]
+	draw_line(points[0] + Vector2(3, 3), points[1] - Vector2(3, -3), highlight, 2.0)
+	draw_line(points[7] + Vector2(3, 3), points[0] + Vector2(3, 3), highlight, 2.0)
 
 
 func _visual_rect() -> Rect2:
 	if compact:
 		var visual_size: Vector2 = Vector2(maxf(1.0, size.x - COMPACT_TOUCH_PAD * 2.0), maxf(1.0, size.y - COMPACT_TOUCH_PAD * 2.0))
 		return Rect2(((size - visual_size) * 0.5).floor(), visual_size.floor())
-	var side: float = floor(maxf(1.0, minf(size.x, size.y) - ACTION_TOUCH_PAD * 2.0))
+	var requested: float = float(get_meta("visual_size", 0.0))
+	var side: float = floor(requested if requested > 0.0 else maxf(1.0, minf(size.x, size.y) - ACTION_TOUCH_PAD * 2.0))
+	side = minf(side, minf(size.x, size.y))
 	var visual_size: Vector2 = Vector2(side, side)
 	return Rect2(((size - visual_size) * 0.5).floor(), visual_size)

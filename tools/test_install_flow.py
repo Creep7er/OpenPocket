@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused install/update/uninstall acceptance flow for one external cartridge."""
+"""Focused install/update/repair/uninstall flow for two external cartridges."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ import cartridge_builder
 ROOT = Path(__file__).resolve().parents[1]
 V1 = ROOT / "store" / "test_fixtures" / "org.popugonet.popugvpocket.pixelclock-1.0.0.pctrg"
 V11 = ROOT / "store" / "mock_packages" / "org.popugonet.popugvpocket.pixelclock-1.1.0.pctrg"
+DICE = ROOT / "store" / "mock_packages" / "org.popugonet.popugvpocket.dice-1.0.0.pctrg"
 
 
 def install(archive_path: Path, packages: Path, registry: dict) -> dict:
@@ -79,9 +80,32 @@ def main() -> int:
         install(V11, packages, registry)
         assert package_id not in storage["packages"]
 
+        dice_id = "org.popugonet.popugvpocket.dice"
+        dice = install(DICE, packages, registry)
+        assert dice["version"] == "1.0.0"
+        (packages / dice_id / "content.pck").unlink()
+        assert not (packages / dice_id / "content.pck").exists()
+        repaired = install(DICE, packages, registry)
+        assert repaired["id"] == dice_id
+        uninstall(dice_id, packages, registry, storage, remove_data=False)
+
+        corrupt = root / "checksum-failure.pctrg"
+        with zipfile.ZipFile(V11) as source, zipfile.ZipFile(corrupt, "w") as target:
+            for name in source.namelist():
+                data = source.read(name)
+                if name == "content.pck":
+                    data = data + b"corrupt"
+                target.writestr(name, data)
+        try:
+            cartridge_builder.inspect(corrupt)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError("checksum mismatch was accepted")
+
         (root / "result.json").write_text(json.dumps(registry), encoding="utf-8")
 
-    print("Pixel Clock install/update/uninstall acceptance flow passed.")
+    print("Pixel Clock and Dice install/update/repair/uninstall flow passed.")
     return 0
 
 

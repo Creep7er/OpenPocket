@@ -8,11 +8,14 @@ import re
 import sys
 from pathlib import Path
 
+import validate_version
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_FILES = [
     "project.godot",
+    "config/product.json",
     "AGENTS.md",
     "README.md",
     "ARCHITECTURE.md",
@@ -34,6 +37,8 @@ REQUIRED_FILES = [
     "app/runtime/layout/console_layout_manager.gd",
     "app/runtime/screen/pocket_screen.gd",
     "app/runtime/store/store_service.gd",
+    "app/runtime/store/store_download_manager.gd",
+    "app/runtime/store/store_download_job.gd",
     "app/runtime/store/local_store_provider.gd",
     "app/runtime/storage/pocket_storage.gd",
     "app/runtime/system/pocket_router.gd",
@@ -41,6 +46,9 @@ REQUIRED_FILES = [
     "app/ui/package_settings/package_setting_definition.gd",
     "app/ui/package_settings/package_settings_renderer.gd",
     "app/ui/package_settings/package_settings_view.gd",
+    ".github/workflows/release.yml",
+    "tools/layout_preview.tscn",
+    "tools/vgirl_layout_audit.tscn",
     "packages/games/snake/manifest.json",
     "packages/games/snake/cartridge.json",
     "packages/games/snake/main.tscn",
@@ -113,7 +121,6 @@ REQUIRED_FILES = [
     "THIRD_PARTY.md",
     "docs/README.ru.md",
     "docs/releases/0.3.2.md",
-    "docs/screenshots/popugvpocket-hero.png",
     ".github/workflows/android-compact.yml",
 ]
 
@@ -277,11 +284,45 @@ def validate_package_boundaries() -> None:
         fail("Package boundary violations:\n" + "\n".join(f"  - {entry}" for entry in violations))
 
 
+def validate_legacy_name_allowlist() -> None:
+    allowed_paths = {
+        "CHANGELOG.md",
+        "ARCHITECTURE.md",
+        "docs/reborn-migration.md",
+        "docs/releases/0.3.2.md",
+        "docs/releases/0.4.0.md",
+        "docs/releases/0.5.0.md",
+        "app/runtime/migration/legacy_backup_importer.gd",
+        "tools/reborn_runtime_test.gd",
+        "tools/validate_project.py",
+    }
+    suffixes = {".md", ".gd", ".json", ".py", ".cfg", ".godot", ".yml", ".yaml", ".ps1"}
+    violations: list[str] = []
+    pattern = re.compile(r"org\.openpocket|\bopenpocket\b", re.IGNORECASE)
+    for path in ROOT.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in suffixes:
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        if relative.startswith((".git/", ".godot/", "android/build/", "artifacts/", "build/", "exports/")):
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
+            if not pattern.search(line):
+                continue
+            actual_repository_url = "github.com/Creep7er/OpenPocket" in line or "openpocket-catalog" in line or "openpocket-game-template" in line or "openpocket-app-template" in line
+            legacy_ui = relative == "app/shell/shell_view.gd" and "LEGACY OPENPOCKET" in line
+            if relative not in allowed_paths and not actual_repository_url and not legacy_ui:
+                violations.append(f"{relative}:{number}")
+    if violations:
+        fail("Deprecated OpenPocket name outside allowlist:\n" + "\n".join(f"  - {entry}" for entry in violations))
+
+
 def main() -> int:
+    validate_version.main()
     validate_required_files()
     validate_manifests()
     validate_external_sources()
     validate_package_boundaries()
+    validate_legacy_name_allowlist()
     print("PopugVPocket validation passed.")
     return 0
 

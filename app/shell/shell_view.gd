@@ -32,11 +32,14 @@ var _picker_purpose := "cartridge"
 var _title := "POPUGVPOCKET"
 var _intro := ""
 var preview_theme_id := ""
+var ui_scale := 1
 
 
 func _ready() -> void:
 	if not StoreService.download_ready.is_connected(_on_store_download_ready):
 		StoreService.download_ready.connect(_on_store_download_ready)
+	if not StoreService.download_state_changed.is_connected(_on_store_download_state_changed):
+		StoreService.download_state_changed.connect(_on_store_download_state_changed)
 	set_process(true)
 	PocketFilePicker.file_selected.connect(_on_picker_file_selected)
 	PocketFilePicker.selection_cancelled.connect(_on_picker_cancelled)
@@ -157,11 +160,16 @@ func show_about() -> void:
 	screen = "about"
 	selected_index = 0
 	items = [{"label": "Back", "action": "back"}]
-	_render("ABOUT", BrandConfig.PRODUCT_NAME.to_upper() + "\nVERSION " + BrandConfig.VERSION + "\nA PIXEL HANDHELD PLATFORM\nBY POPUGONET\nREBORN FROM OPENPOCKET")
+	_render("ABOUT", BrandConfig.PRODUCT_NAME.to_upper() + "\nVERSION " + BrandConfig.VERSION + "\nA PIXEL HANDHELD PLATFORM\nBY POPUGONET\nREBORN EDITION")
 
 
 func set_input_enabled(value: bool) -> void:
 	input_enabled = value
+
+
+func set_ui_scale(value: int) -> void:
+	ui_scale = clampi(value, 1, 2)
+	queue_redraw()
 
 
 func _render(title: String, intro: String) -> void:
@@ -276,6 +284,10 @@ func _activate_selected() -> void:
 			_show_manage_cartridge(Dictionary(item.get("manifest", {})))
 		"install_store":
 			_install_from_store(Dictionary(item.get("store_item", {})))
+		"cancel_download":
+			StoreService.cancel_download()
+		"repair":
+			_repair_cartridge(String(item.get("id", "")))
 		"install":
 			_start_file_picker()
 		"legacy_import":
@@ -463,12 +475,16 @@ func _show_manage_cartridge(manifest: Dictionary) -> void:
 	screen = "cartridge_manage"
 	selected_index = 0
 	var built_in := bool(manifest.get("built_in", false))
+	var cartridge_id := String(manifest.get("id", ""))
+	var verification: Dictionary = CartridgeManager.verify(cartridge_id)
 	items = [
-		{"label": "Verify", "action": "verify", "id": String(manifest.get("id", ""))},
+		{"label": "Verify", "action": "verify", "id": cartridge_id},
 		{"label": "Reset Settings", "action": "reset_settings", "manifest": manifest},
 		{"label": "Reset Data", "action": "reset_data", "manifest": manifest},
 	]
 	if not built_in:
+		if not bool(verification.get("ok", false)) and not StoreService.catalog_item(cartridge_id).is_empty():
+			items.push_front({"label": "Repair", "action": "repair", "id": cartridge_id})
 		items.append({"label": "Uninstall", "action": "uninstall", "manifest": manifest})
 	if bool(PocketStorage.get_setting("developer_mode", false)):
 		items.append({"label": "Technical Details", "action": "view_manifest", "manifest": manifest})
@@ -562,6 +578,8 @@ func _show_store_details(item: Dictionary) -> void:
 	if installed:
 		if StoreService.has_update(String(item.get("id", ""))):
 			items.append({"label": "Update", "action": "install_store", "store_item": item})
+		else:
+			items.append({"label": "Reinstall", "action": "install_store", "store_item": item})
 		items.append({"label": "Open", "action": "play", "manifest": installed_manifest})
 		items.append({"label": "Manage", "action": "store_manage", "manifest": installed_manifest})
 	else:
@@ -575,7 +593,10 @@ func _show_store_details(item: Dictionary) -> void:
 func _install_from_store(item: Dictionary) -> void:
 	var download: Dictionary = StoreService.download_to_imports(String(item.get("id", "")), String(item.get("version", "")))
 	if bool(download.get("pending", false)):
-		_render("STORE", "DOWNLOADING...")
+		screen = "store_download"
+		selected_index = 0
+		items = [{"label": "Cancel", "action": "cancel_download"}]
+		_render("DOWNLOADING", String(item.get("name", "CARTRIDGE")).to_upper() + "\n[----------] 0%")
 		return
 	if not bool(download.get("ok", false)):
 		_show_result("INSTALL FAILED", String(download.get("error", "download failed")).to_upper(), true)
@@ -589,13 +610,42 @@ func _install_from_store(item: Dictionary) -> void:
 
 func _on_store_download_ready(download: Dictionary) -> void:
 	if not bool(download.get("ok", false)):
-		_show_result("INSTALL FAILED", String(download.get("error", "download failed")).to_upper(), true)
+		var error := String(download.get("error", "download_failed"))
+		if error == "cancelled":
+			_back()
+		else:
+			_show_result("DOWNLOAD FAILED", StoreDownloadErrors.user_message(error), true)
 		return
+	screen = "store_installing"
+	items = []
+	_render("INSTALLING", "VERIFYING CARTRIDGE")
+	StoreService.mark_installing()
 	var install_result: Dictionary = CartridgeManager.install_from_file(String(download.get("path", "")), String(download.get("trust", "trusted")), true)
 	if bool(install_result.get("ok", false)):
+		StoreService.mark_completed()
 		_show_installed(Dictionary(install_result.get("record", {})), bool(install_result.get("restart_required", false)))
 	else:
 		_show_result("INSTALL FAILED", String(install_result.get("error", "install failed")).to_upper(), true)
+
+
+func _on_store_download_state_changed(snapshot: Dictionary) -> void:
+	if screen != "store_download":
+		return
+	var state := String(snapshot.get("state", "connecting"))
+	var item := Dictionary(snapshot.get("item", {}))
+	var progress := clampf(float(snapshot.get("progress", 0.0)), 0.0, 1.0)
+	var blocks: int = clampi(int(floor(progress * 10.0)), 0, 10)
+	var body := String(item.get("name", "CARTRIDGE")).to_upper()
+	body += "\n[" + "#".repeat(blocks) + "-".repeat(10 - blocks) + "] " + str(int(progress * 100.0)) + "%"
+	_render(state.to_upper(), body)
+
+
+func _repair_cartridge(cartridge_id: String) -> void:
+	var item := StoreService.catalog_item(cartridge_id)
+	if item.is_empty():
+		_show_result("REPAIR FAILED", "CATALOG ENTRY NOT AVAILABLE", true)
+		return
+	_install_from_store(item)
 
 
 func _start_file_picker() -> void:
@@ -737,7 +787,7 @@ func _show_installed(record: Dictionary, restart_required: bool) -> void:
 	items.append({"label": "Library", "action": "library"})
 	var body := String(record.get("name", "CARTRIDGE")).to_upper()
 	if restart_required:
-		body += "\nRESTART %s TO APPLY UPDATE" % BrandConfig.product_name.to_upper()
+		body += "\nRESTART %s TO APPLY UPDATE" % BrandConfig.PRODUCT_NAME.to_upper()
 	_render("INSTALLED", body)
 
 
@@ -767,7 +817,7 @@ func _show_uninstall_confirmation(manifest: Dictionary) -> void:
 		{"label": "Remove App Only", "action": "uninstall_app_only"},
 		{"label": "Remove App And Data", "action": "uninstall_app_data"},
 	]
-	_render("UNINSTALL " + String(manifest.get("name", "CARTRIDGE")).to_upper() + "?", "SAVED DATA IS KEPT UNLESS\nAPP AND DATA IS SELECTED.")
+	_render("REMOVE " + String(manifest.get("name", "CARTRIDGE")).to_upper() + "?", "ACHIEVEMENTS AND EARNED REWARDS\nWILL BE KEPT.")
 
 
 func _uninstall_cartridge(manifest: Dictionary, remove_data: bool) -> void:
@@ -814,6 +864,10 @@ func _friendly_error(code: String) -> String:
 		"limit_exceeded": "ARCHIVE TOO LARGE",
 		"unsafe_path": "UNSAFE ARCHIVE PATH",
 		"install_failed": "INSTALL FAILED",
+		"download_unavailable": "DOWNLOAD NOT AVAILABLE",
+		"download_too_large": "DOWNLOAD TOO LARGE",
+		"download_io_error": "DOWNLOAD SAVE FAILED",
+		"archive_checksum_mismatch": "CARTRIDGE CHECKSUM FAILED",
 	}
 	return String(names.get(code.to_lower(), code.to_upper().replace("_", " ")))
 
@@ -853,7 +907,7 @@ func _intro_for_screen() -> String:
 		"settings":
 			return "LEFT RIGHT EDIT"
 		"about":
-			return BrandConfig.PRODUCT_NAME.to_upper() + " " + BrandConfig.VERSION + "\nSDK 0.5.0 EXPERIMENTAL\nCARTRIDGE FORMAT 2\nNO CODE SANDBOX"
+			return BrandConfig.PRODUCT_NAME.to_upper() + " " + BrandConfig.VERSION + "\nSDK 0.5.1 EXPERIMENTAL\nCARTRIDGE FORMAT 2\nNO CODE SANDBOX"
 	return _intro
 
 
@@ -871,9 +925,9 @@ func _draw_boot(p: Dictionary) -> void:
 func _draw_screen_body(p: Dictionary) -> void:
 	var y := 56
 	for line in _intro.split("\n"):
-		PixelFont.draw_text(self, Vector2(18, y), line, p["light"], 1)
-		y += 12
-	y += 8
+		PixelFont.draw_text(self, Vector2(18, y), _fit_text(line, size.x - 36.0), p["light"], ui_scale)
+		y += 18 if ui_scale == 2 else 12
+	y += 6 if ui_scale == 2 else 8
 	for index in range(items.size()):
 		var selected := index == selected_index
 		var row_rect := Rect2(Vector2(14, y - 4), Vector2(size.x - 28, 20))
@@ -882,8 +936,9 @@ func _draw_screen_body(p: Dictionary) -> void:
 			draw_rect(row_rect, p["hi"], false, 2)
 		var cursor := ">" if selected and int(cursor_tick * 5.0) % 2 == 0 else " "
 		var color: Color = p["dark"] if selected else p["hi"]
-		PixelFont.draw_text(self, Vector2(22, y), cursor + " " + _item_text(items[index]), color, 1)
-		y += 24
+		var item_text := _fit_text(cursor + " " + _item_text(items[index]), size.x - 44.0)
+		PixelFont.draw_text(self, Vector2(22, y), item_text, color, ui_scale)
+		y += 22 if ui_scale == 2 else 24
 	if screen == "library" and not packages.is_empty() and selected_index < packages.size():
 		var manifest: Dictionary = packages[selected_index]
 		var preview := String(manifest.get("type", "cartridge")).to_upper()
@@ -892,7 +947,7 @@ func _draw_screen_body(p: Dictionary) -> void:
 		if StoreService.has_update(String(manifest.get("id", ""))):
 			preview += "\nUPDATE AVAILABLE"
 		draw_rect(Rect2(Vector2(16, size.y - 78), Vector2(size.x - 32, 48)), p["mid"], false, 2)
-		PixelFont.draw_text(self, Vector2(24, size.y - 68), preview, p["light"], 1)
+		PixelFont.draw_text(self, Vector2(24, size.y - 68), preview, p["light"], ui_scale)
 
 
 func _draw_footer(p: Dictionary) -> void:
@@ -914,7 +969,13 @@ func _draw_footer(p: Dictionary) -> void:
 			footer = "A TYPE/OPEN  X DELETE  B BACK"
 		"install_confirmation", "developer_required", "uninstall_confirmation":
 			footer = "A SELECT  B CANCEL  X DETAILS" if screen == "install_confirmation" else "A SELECT  B CANCEL"
-	PixelFont.draw_text(self, Vector2(16, size.y - 18), footer, p["light"], 1)
+	PixelFont.draw_text(self, Vector2(16, size.y - 18), _fit_text(footer, size.x - 32.0), p["light"], ui_scale)
+
+
+func _fit_text(value: String, max_width: float) -> String:
+	var character_width := float((PixelFont.CHAR_W + PixelFont.GAP) * ui_scale)
+	var max_characters := maxi(1, int(floor(max_width / character_width)))
+	return value.left(max_characters)
 
 
 func _draw_scanlines(p: Dictionary) -> void:

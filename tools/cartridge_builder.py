@@ -77,11 +77,11 @@ def package_manifest_to_cartridge(package_dir: Path) -> dict[str, Any]:
         "format_version": FORMAT_VERSION,
         "id": package_id,
         "name": str(manifest.get("name", package_id)),
-        "version": str(manifest.get("version", "0.5.0-dev")),
+        "version": str(manifest.get("version", "0.5.1-dev")),
         "type": str(manifest.get("type", "game")),
         "entry_scene": f"res://cartridges/{package_id}/{Path(rel_scene).name}",
-        "sdk_version": "0.5.0",
-        "runtime": {"min_version": "0.5.0", "max_version": None},
+        "sdk_version": "0.5.1",
+        "runtime": {"min_version": "0.5.1", "max_version": None},
         "author": normalize_author(manifest.get("author", "PopugVPocket Contributors")),
         "description": str(manifest.get("description", "PopugVPocket cartridge.")),
         "category": str(manifest.get("category", "misc")),
@@ -101,8 +101,8 @@ def load_cartridge_manifest(package_dir: Path) -> dict[str, Any]:
         manifest = read_json(cartridge_path)
         cartridge_id = str(manifest.get("id", ""))
         manifest["entry_scene"] = f"res://cartridges/{cartridge_id}/{Path(str(manifest.get('entry_scene', 'main.tscn'))).name}"
-        manifest["sdk_version"] = "0.5.0"
-        manifest["runtime"] = {"min_version": "0.5.0", "max_version": None}
+        manifest["sdk_version"] = "0.5.1"
+        manifest["runtime"] = {"min_version": "0.5.1", "max_version": None}
         return manifest
     return package_manifest_to_cartridge(package_dir)
 

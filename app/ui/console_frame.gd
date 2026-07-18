@@ -3,11 +3,13 @@ extends Control
 const PixelTouchButtonScene := preload("res://app/ui/components/pixel_touch_button.gd")
 const PixelDpadScene := preload("res://app/ui/components/pixel_dpad.gd")
 const PixelStickScene := preload("res://app/ui/components/pixel_stick.gd")
+const ActionCluster := preload("res://app/runtime/layout/action_cluster_layout.gd")
 
 const SCREEN_ASPECT := 1.25
 const MIN_SIDE_MARGIN := 8.0
 const SAFE_FALLBACK_MARGIN := 10.0
 const MAX_CONSOLE_WIDTH := 720.0
+const MAX_VGIRL_HEIGHT := 1080.0
 const MIN_TOUCH_TARGET := 56.0
 const HEADER_RATIO := 0.055
 const SCREEN_WIDTH_RATIO := 0.92
@@ -16,6 +18,10 @@ const SCREEN_GAP_RATIO := 0.038
 const SYSTEM_BUTTON_RATIO := 0.052
 const BOTTOM_MARGIN_RATIO := 0.045
 const ACTION_TOUCH_PAD := 16.0
+const VGIRL_SIDE_GAP := 8.0
+const VGIRL_MIN_SIDE_ZONE := 124.0
+const VGIRL_SCALE_STEP := 0.125
+const VGIRL_MAX_DPAD_SIZE := 260.0
 
 signal virtual_button_changed(button: String, pressed: bool)
 
@@ -39,6 +45,8 @@ var _dpad_rect := Rect2()
 var _menu_rect := Rect2()
 var _back_rect := Rect2()
 var _screen_scale := 1.0
+var _shell_scale := 1.0
+var _ui_text_scale := 1
 var _layout_signature := ""
 
 
@@ -75,6 +83,7 @@ func set_screen(screen: Node) -> void:
 	if screen is Control:
 		var control := screen as Control
 		control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_apply_screen_ui_scale()
 
 
 func show_screen_overlay(overlay: Control) -> void:
@@ -82,6 +91,7 @@ func show_screen_overlay(overlay: Control) -> void:
 	current_overlay = overlay
 	screen_viewport.add_child(overlay)
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_apply_screen_ui_scale()
 
 
 func clear_screen_overlay() -> void:
@@ -144,7 +154,11 @@ func _make_button(label: String, button: String, compact: bool = false, primary:
 
 func _layout_controls() -> void:
 	var window_size: Vector2 = get_viewport_rect().size.floor()
-	_safe_rect = _get_safe_rect(window_size)
+	_layout_for_window(window_size)
+
+
+func _layout_for_window(window_size: Vector2, safe_override: Rect2 = Rect2()) -> void:
+	_safe_rect = safe_override if safe_override.size != Vector2.ZERO else _get_safe_rect(window_size)
 	var use_stick := String(PocketStorage.get_setting("direction_control", "dpad")) == "stick"
 	dpad.visible = not use_stick
 	stick.visible = use_stick
@@ -152,6 +166,7 @@ func _layout_controls() -> void:
 	if String(PocketStorage.get_setting("console_profile", "vboy")) == "vgirl" and window_size.x > window_size.y:
 		_layout_vgirl()
 		return
+	_ui_text_scale = 1
 	var outer_margin: float = clamp(_safe_rect.size.x * 0.018, 4.0, SAFE_FALLBACK_MARGIN)
 	_content_rect = _safe_rect.grow(-outer_margin)
 	var console_w: float = min(MAX_CONSOLE_WIDTH, _content_rect.size.x - MIN_SIDE_MARGIN * 2.0)
@@ -234,57 +249,86 @@ func _layout_controls() -> void:
 	system_buttons[PocketInput.MENU].size = _menu_rect.size
 	system_buttons[PocketInput.EXIT].position = _back_rect.position
 	system_buttons[PocketInput.EXIT].size = _back_rect.size
+	_apply_screen_ui_scale()
 	queue_redraw()
 
 
 func _layout_vgirl() -> void:
 	var outer_margin: float = clamp(_safe_rect.size.y * 0.018, 4.0, SAFE_FALLBACK_MARGIN)
 	_content_rect = _safe_rect.grow(-outer_margin)
-	var console_h: float = minf(MAX_CONSOLE_WIDTH, _content_rect.size.y)
+	var console_h: float = minf(MAX_VGIRL_HEIGHT, _content_rect.size.y)
 	var console_w: float = minf(_content_rect.size.x, console_h * 1.78)
 	_console_rect = Rect2((_content_rect.position + (_content_rect.size - Vector2(console_w, console_h)) * 0.5).floor(), Vector2(console_w, console_h).floor())
-	var margin: float = floor(clamp(_console_rect.size.y * 0.055, 12.0, 26.0))
-	var header_h: float = floor(clamp(_console_rect.size.y * 0.09, 34.0, 52.0))
+	var margin: float = floor(clamp(_console_rect.size.y * 0.026, 8.0, 20.0))
+	var header_h: float = floor(clamp(_console_rect.size.y * 0.075, 28.0, 52.0))
 	var available_h: float = _console_rect.size.y - header_h - margin * 2.0
-	var screen_h: float = floor(minf(available_h, (_console_rect.size.x * 0.58 - margin * 2.0) / SCREEN_ASPECT))
-	var screen_w: float = floor(screen_h * SCREEN_ASPECT)
-	_screen_rect = Rect2(Vector2(_console_rect.position.x + margin, _console_rect.position.y + header_h + (available_h - screen_h) * 0.5).floor(), Vector2(screen_w, screen_h))
+	var system_h: float = floor(clamp(available_h * 0.12, 36.0, 48.0))
+	var system_gap: float = floor(clamp(available_h * 0.025, 6.0, 14.0))
+	var display_h: float = available_h - system_h - system_gap
+	var max_screen_w: float = maxf(240.0, _console_rect.size.x - (VGIRL_MIN_SIDE_ZONE + VGIRL_SIDE_GAP) * 2.0 - margin * 2.0)
+	if _console_rect.size.y >= 500.0:
+		max_screen_w = minf(max_screen_w, floor(_console_rect.size.x * 0.50))
+	var candidate_scale: float = minf(display_h / float(PocketScreen.LOGICAL_SIZE.y), max_screen_w / float(PocketScreen.LOGICAL_SIZE.x))
+	# Eighth-step nearest scaling keeps the screen large on 16:9 devices without
+	# applying fractional scaling to the physical controls.
+	var display_scale: float = candidate_scale
+	if candidate_scale >= 1.0:
+		display_scale = maxf(1.0, floor(candidate_scale / VGIRL_SCALE_STEP) * VGIRL_SCALE_STEP)
+	var screen_w: float = floor(float(PocketScreen.LOGICAL_SIZE.x) * display_scale)
+	var screen_h: float = floor(float(PocketScreen.LOGICAL_SIZE.y) * display_scale)
+	var center_w: float = screen_w
+	var screen_x: float = floor(_console_rect.get_center().x - screen_w * 0.5)
+	var display_top: float = _console_rect.position.y + header_h + margin
+	_screen_rect = Rect2(Vector2(screen_x, display_top + (display_h - screen_h) * 0.5).floor(), Vector2(screen_w, screen_h))
 	screen_holder.position = _screen_rect.position
 	screen_holder.size = _screen_rect.size
 	screen_container.position = Vector2.ZERO
 	screen_container.size = _screen_rect.size
-	_screen_scale = floor(minf(screen_w / float(PocketScreen.LOGICAL_SIZE.x), screen_h / float(PocketScreen.LOGICAL_SIZE.y)))
-	var zone := Rect2(Vector2(_screen_rect.end.x + margin, _console_rect.position.y + header_h), Vector2(_console_rect.end.x - _screen_rect.end.x - margin * 2.0, available_h))
-	_controls_rect = zone
-	var control_size: float = floor(minf(zone.size.y * 0.54, zone.size.x * 0.48))
-	var left_side := String(PocketStorage.get_setting("stick_side", "left")) == "left"
-	var direction_x: float = zone.position.x if left_side else zone.end.x - control_size
-	_dpad_rect = Rect2(Vector2(direction_x, zone.position.y + (zone.size.y - control_size) * 0.5).floor(), Vector2(control_size, control_size))
+	_screen_scale = minf(screen_w / float(PocketScreen.LOGICAL_SIZE.x), screen_h / float(PocketScreen.LOGICAL_SIZE.y))
+	_shell_scale = _console_rect.size.y / 360.0
+	_ui_text_scale = 2
+
+	var left_zone := Rect2(
+		Vector2(_console_rect.position.x + margin, display_top),
+		Vector2(_screen_rect.position.x - _console_rect.position.x - margin - VGIRL_SIDE_GAP, display_h)
+	)
+	var right_zone := Rect2(
+		Vector2(_screen_rect.end.x + VGIRL_SIDE_GAP, display_top),
+		Vector2(_console_rect.end.x - margin - _screen_rect.end.x - VGIRL_SIDE_GAP, display_h)
+	)
+	_controls_rect = Rect2(left_zone.position, Vector2(right_zone.end.x - left_zone.position.x, display_h))
+	var roomy_controls := _console_rect.size.y >= 500.0
+	var control_limit: float = VGIRL_MAX_DPAD_SIZE if roomy_controls else 156.0
+	var zone_ratio: float = 0.88 if roomy_controls else 0.82
+	var height_ratio: float = 0.72 if roomy_controls else 0.62
+	var control_size: float = floor(clamp(minf(left_zone.size.x * zone_ratio, display_h * height_ratio), 96.0, control_limit))
+	_dpad_rect = Rect2((left_zone.get_center() - Vector2(control_size, control_size) * 0.5).floor(), Vector2(control_size, control_size))
 	dpad.position = _dpad_rect.position
 	dpad.size = _dpad_rect.size
 	_place_stick(_dpad_rect)
-	var action_x: float = zone.end.x - control_size * 0.58 if left_side else zone.position.x + control_size * 0.58
-	var cluster_center := Vector2(action_x, zone.position.y + zone.size.y * 0.48)
-	var primary_size: float = floor(clamp(control_size * 0.30, 54.0, 82.0))
-	var secondary_size: float = floor(primary_size * 0.84)
-	var spacing: float = floor(primary_size * 0.78)
-	_place_action_center(PocketInput.X, cluster_center + Vector2(0, -spacing), secondary_size)
-	_place_action_center(PocketInput.Y, cluster_center + Vector2(-spacing, 0), secondary_size)
-	_place_action_center(PocketInput.A, cluster_center + Vector2(spacing, 0), primary_size)
-	_place_action_center(PocketInput.B, cluster_center + Vector2(0, spacing), primary_size)
-	_action_cluster_rect = Rect2(cluster_center - Vector2(spacing * 1.6, spacing * 1.6), Vector2(spacing * 3.2, spacing * 3.2))
-	var sys_w: float = floor(clamp(zone.size.x * 0.19, 66.0, 94.0))
-	var sys_h: float = floor(clamp(zone.size.y * 0.10, 38.0, 48.0))
-	var sys_gap: float = floor(clamp(zone.size.x * 0.05, 16.0, 30.0))
-	var sys_x: float = floor(zone.position.x + (zone.size.x - sys_w * 2.0 - sys_gap) * 0.5)
-	var sys_y: float = floor(zone.end.y - sys_h)
-	_menu_rect = Rect2(Vector2(sys_x, sys_y), Vector2(sys_w, sys_h))
-	_back_rect = Rect2(Vector2(sys_x + sys_w + sys_gap, sys_y), Vector2(sys_w, sys_h))
+
+	var primary_size: float = floor(clamp(control_size * (0.48 if roomy_controls else 0.44), 68.0 if roomy_controls else 52.0, 104.0 if roomy_controls else 86.0))
+	var secondary_size: float = floor(clamp(primary_size * 0.84, 60.0 if roomy_controls else 44.0, 88.0 if roomy_controls else 72.0))
+	_place_action_cluster(right_zone, primary_size, secondary_size)
+
+	var sys_w: float = floor(clamp(center_w * 0.25, 70.0, 94.0))
+	var sys_gap: float = floor(clamp(center_w * 0.08, 18.0, 30.0))
+	var sys_x: float = floor(_console_rect.get_center().x - (sys_w * 2.0 + sys_gap) * 0.5)
+	var sys_y: float = floor(display_top + display_h + system_gap)
+	_menu_rect = Rect2(Vector2(sys_x, sys_y), Vector2(sys_w, system_h))
+	_back_rect = Rect2(Vector2(sys_x + sys_w + sys_gap, sys_y), Vector2(sys_w, system_h))
 	system_buttons[PocketInput.MENU].position = _menu_rect.position
 	system_buttons[PocketInput.MENU].size = _menu_rect.size
 	system_buttons[PocketInput.EXIT].position = _back_rect.position
 	system_buttons[PocketInput.EXIT].size = _back_rect.size
+	_apply_screen_ui_scale()
 	queue_redraw()
+
+
+func _apply_screen_ui_scale() -> void:
+	for target in [current_screen, current_overlay]:
+		if target != null and target.has_method("set_ui_scale"):
+			target.call("set_ui_scale", _ui_text_scale)
 
 
 func _place_stick(direction_rect: Rect2) -> void:
@@ -296,9 +340,26 @@ func _place_stick(direction_rect: Rect2) -> void:
 
 func _place_action_center(button: String, center: Vector2, visual_size: float) -> void:
 	var control: Control = action_buttons[button]
+	control.set_meta("uniform_style", false)
+	control.set_meta("visual_size", visual_size)
+	control.custom_minimum_size = Vector2(MIN_TOUCH_TARGET, MIN_TOUCH_TARGET)
 	var touch_size: float = floor(maxf(MIN_TOUCH_TARGET, visual_size + ACTION_TOUCH_PAD))
 	control.position = (center - Vector2(touch_size, touch_size) * 0.5).floor()
 	control.size = Vector2(touch_size, touch_size)
+
+
+func _place_action_cluster(zone: Rect2, primary_size: float, secondary_size: float) -> void:
+	var layout: Dictionary = ActionCluster.calculate(zone, primary_size, secondary_size, MIN_TOUCH_TARGET, ACTION_TOUCH_PAD)
+	var visual_sizes: Dictionary = Dictionary(layout["visual_sizes"])
+	for button in [PocketInput.X, PocketInput.Y, PocketInput.A, PocketInput.B]:
+		var control: Control = action_buttons[button]
+		var rect: Rect2 = layout[button]
+		control.set_meta("uniform_style", true)
+		control.custom_minimum_size = rect.size
+		control.position = rect.position
+		control.size = rect.size
+		control.set_meta("visual_size", float(visual_sizes[button]))
+	_action_cluster_rect = layout["bounds"]
 
 
 func _get_safe_rect(window_size: Vector2) -> Rect2:
@@ -347,8 +408,10 @@ func _draw_debug_overlay(p: Dictionary) -> void:
 	text += "\nDPAD " + _rect_text(_dpad_rect)
 	text += "\nACTIONS " + _rect_text(_action_cluster_rect)
 	text += "\nSCREEN SCALE " + str(_screen_scale)
+	text += "\nSHELL SCALE " + str(snappedf(_shell_scale, 0.01))
+	text += "\nTEXT SCALE " + str(_ui_text_scale)
 	text += "\nASPECT " + str(snappedf(size.x / maxf(size.y, 1.0), 0.001))
-	var box := Rect2(Vector2(12, 72), Vector2(238, 104))
+	var box := Rect2(Vector2(12, 72), Vector2(238, 132))
 	draw_rect(box, p["dark"], true)
 	draw_rect(box, p["hi"], false, 2)
 	PixelFont.draw_text(self, box.position + Vector2(6, 6), text, p["hi"], 1)

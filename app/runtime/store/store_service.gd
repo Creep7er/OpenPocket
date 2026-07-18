@@ -3,22 +3,28 @@ extends Node
 const LocalStoreProvider := preload("res://app/runtime/store/local_store_provider.gd")
 const GitHubCatalogProvider := preload("res://app/runtime/store/github_catalog_provider.gd")
 const Trust := preload("res://app/runtime/cartridges/cartridge_trust.gd")
+const DownloadManager := preload("res://app/runtime/store/store_download_manager.gd")
 
 signal catalog_changed
 signal download_ready(result: Dictionary)
+signal download_state_changed(snapshot: Dictionary)
 
 var _provider: Node
 var _fallback := LocalStoreProvider.new()
 var _catalog: Array[Dictionary] = []
 var _loaded := false
 var _status := "updating"
+var _downloads: StoreDownloadManager
 
 
 func _ready() -> void:
 	_provider = GitHubCatalogProvider.new()
 	add_child(_provider)
 	_provider.catalog_updated.connect(_on_catalog_updated)
-	_provider.download_finished.connect(_on_download_finished)
+	_downloads = DownloadManager.new()
+	_downloads.state_changed.connect(download_state_changed.emit)
+	_downloads.finished.connect(_on_download_finished)
+	add_child(_downloads)
 	refresh()
 
 
@@ -123,6 +129,13 @@ func has_update(cartridge_id: String) -> bool:
 	return false
 
 
+func catalog_item(cartridge_id: String) -> Dictionary:
+	for item in list_catalog():
+		if String(item.get("id", "")) == cartridge_id:
+			return item.duplicate(true)
+	return {}
+
+
 static func compare_versions(left: String, right: String) -> int:
 	var left_core := left.split("-", false, 1)[0]
 	var right_core := right.split("-", false, 1)[0]
@@ -148,7 +161,7 @@ func download_to_imports(cartridge_id: String, version: String = "") -> Dictiona
 			item = candidate
 			break
 	if not item.is_empty() and not Dictionary(item.get("release", {})).is_empty():
-		return _provider.download_cartridge(item)
+		return _downloads.start(item)
 	var download_result: Dictionary = _fallback.download(cartridge_id, version)
 	if not bool(download_result.get("ok", false)):
 		return download_result
@@ -172,3 +185,19 @@ func _on_download_finished(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
 		result["trust"] = Trust.TRUSTED
 	download_ready.emit(result)
+
+
+func cancel_download() -> void:
+	_downloads.cancel()
+
+
+func download_snapshot() -> Dictionary:
+	return _downloads.snapshot()
+
+
+func mark_installing() -> void:
+	_downloads.mark_installing()
+
+
+func mark_completed() -> void:
+	_downloads.mark_completed()

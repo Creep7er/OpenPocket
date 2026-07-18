@@ -1,6 +1,6 @@
 # Android Build
 
-PopugVPocket 0.5.0 targets portrait Android with package id `org.popugonet.popugvpocket`, `versionName` 0.5.0, and `versionCode` 6.
+PopugVPocket 0.5.1 supports VBoy portrait and VGirl landscape Android profiles with package id `org.popugonet.popugvpocket`, `versionName` 0.5.1, and `versionCode` 7.
 
 ## Requirements
 
@@ -19,10 +19,12 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk-17 `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Compact Debug" `
-  -Output exports\android\popugvpocket-0.5.0-compact-debug.apk
+  -Output exports\android\popugvpocket-0.5.1-compact-debug.apk
 ```
 
 `-Godot` may be omitted when `godot` or `godot4` is on `PATH`. `-JavaHome` and `-AndroidHome` may be omitted when `JAVA_HOME` and `ANDROID_HOME` are set. The script installs the matching Godot Android build template into the ignored `android/build/` directory when needed.
+
+Every Android preset uses `branding/android/icon-legacy.png`, `icon-foreground.png`, and `icon-background.png`. The foreground is transparent and safe-zone padded; the background is full bleed. Keep the launcher fields synchronized when adding another Android preset.
 
 The compact preset exports arm64, keeps the PopugVPocket SAF plugin, and compresses the native Godot library. It is debug-signed for local testing.
 
@@ -34,11 +36,11 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk-17 `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Bundle" `
-  -Output exports\android\popugvpocket-0.5.0.aab `
+  -Output exports\android\popugvpocket-0.5.1.aab `
   -Release
 ```
 
-The AAB preset is unsigned. Configure a production key outside the repository before distribution.
+The local AAB preset is unsigned. `.github/workflows/release.yml` supports `debug-prerelease` without secrets and `production` with `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_ALIAS`. Godot's Android export preset uses the same release password for the keystore entry. Production mode fails clearly when secrets are missing; keys are never committed.
 
 ## Install On A Device
 
@@ -46,7 +48,7 @@ Enable USB debugging, connect the device, then use the SDK `adb` executable:
 
 ```powershell
 adb devices
-adb install -r exports\android\popugvpocket-0.5.0-compact-debug.apk
+adb install -r exports\android\popugvpocket-0.5.1-compact-debug.apk
 ```
 
-PopugVPocket uses Android Storage Access Framework without broad storage permissions. INTERNET is enabled in 0.5.0 for HTTPS catalog and release asset GET requests.
+PopugVPocket uses Android Storage Access Framework without broad storage permissions. INTERNET is enabled in 0.5.1 for HTTPS catalog and release asset GET requests. The runtime does not request `REQUEST_INSTALL_PACKAGES` and does not automatically install application APK updates.

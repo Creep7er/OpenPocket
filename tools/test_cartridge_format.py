@@ -27,7 +27,7 @@ def base_manifest(content_sha: str) -> dict:
         "version": "1.0.0",
         "type": "game",
         "entry_scene": "res://cartridges/org.example.valid/main.tscn",
-        "sdk_version": "0.5.0",
+        "sdk_version": "0.5.1",
         "runtime": {"min_version": "0.3.1", "max_version": None},
         "author": {"name": "Tester"},
         "description": "Validation fixture.",

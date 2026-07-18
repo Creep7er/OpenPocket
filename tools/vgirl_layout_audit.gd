@@ -19,7 +19,7 @@ func _run() -> void:
 	add_child(app)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	var lines: Array[String] = ["RESOLUTION | FONT SCALE | SCREEN RECT | DPAD RECT | ACTION RECT | OVERLAP | RESULT"]
+	var lines: Array[String] = ["RESOLUTION | FONT SCALE | SCREEN RECT | DPAD RECT | ACTION RECT | SCREEN FILL | OVERLAP | RESULT"]
 	var failed := false
 	for window_size in SIZES:
 		DisplayServer.window_set_size(window_size)
@@ -32,6 +32,7 @@ func _run() -> void:
 		var actions: Rect2 = app.console_frame.get("_action_cluster_rect")
 		var menu: Rect2 = app.console_frame.get("_menu_rect")
 		var back: Rect2 = app.console_frame.get("_back_rect")
+		var console: Rect2 = app.console_frame.get("_console_rect")
 		var reasons: Array[String] = []
 		if screen.intersects(dpad): reasons.append("screen/dpad")
 		if screen.intersects(actions): reasons.append("screen/actions")
@@ -48,9 +49,11 @@ func _run() -> void:
 					reasons.append(String(action_keys[first_index]) + "/" + String(action_keys[second_index]))
 		var readable := screen.size.x >= 280.0 and screen.size.y >= 224.0
 		var controls_ok := dpad.size.x >= 96.0
-		var passed := not overlap and readable and controls_ok
+		var screen_fill: float = screen.size.x / console.size.x
+		var fills_console := screen_fill >= 0.45
+		var passed := not overlap and readable and controls_ok and fills_console
 		failed = failed or not passed
-		lines.append("%dx%d | %d | %s | %s | %s | %s | %s" % [window_size.x, window_size.y, int(app.console_frame.get("_ui_text_scale")), _rect(screen), _rect(dpad), _rect(actions), "YES" if overlap else "NO", "PASS" if passed else "FAIL"])
+		lines.append("%dx%d | %d | %s | %s | %s | %d%% | %s | %s" % [window_size.x, window_size.y, int(app.console_frame.get("_ui_text_scale")), _rect(screen), _rect(dpad), _rect(actions), int(screen_fill * 100.0), "YES" if overlap else "NO", "PASS" if passed else "FAIL"])
 		if not reasons.is_empty(): lines.append("  overlap: " + ", ".join(reasons))
 	var output := ProjectSettings.globalize_path("res://artifacts/ui-preview/vgirl-layout-report.txt")
 	DirAccess.make_dir_recursive_absolute(output.get_base_dir())

@@ -119,15 +119,31 @@ jobs:
       - name: Build Android artifacts
         shell: bash
         run: |
+          run_godot_export() {
+            set +e
+            "$@" 2>&1 | tee export.log
+            status=${PIPESTATUS[0]}
+            set -e
+            if [[ $status -ne 0 ]]; then
+              {
+                echo "### Android export failure"
+                echo '```text'
+                tail -n 100 export.log
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+              tail -n 100 export.log | python -c "import sys; text=sys.stdin.read()[-6000:].replace('%','%25').replace(chr(13),'%0D').replace(chr(10),'%0A'); print(f'::error title=Android export failed::{text}')"
+              return "$status"
+            fi
+          }
           version="${{ steps.release.outputs.version }}"
           mkdir -p exports/android
           if [[ "${{ steps.release.outputs.mode }}" == "production" ]]; then
             apk="exports/android/popugvpocket-${version}.apk"
-            "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Compact Debug" "$apk"
-            "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Bundle" "exports/android/popugvpocket-${version}.aab"
+            run_godot_export "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Compact Debug" "$apk"
+            run_godot_export "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Bundle" "exports/android/popugvpocket-${version}.aab"
           else
             apk="exports/android/popugvpocket-${version}-debug.apk"
-            "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-debug "Android Compact Debug" "$apk"
+            run_godot_export "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-debug "Android Compact Debug" "$apk"
           fi
           sha256sum exports/android/* > exports/android/SHA256SUMS.txt
       - name: Inspect APK

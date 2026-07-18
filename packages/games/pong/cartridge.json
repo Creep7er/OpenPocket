@@ -2,12 +2,12 @@
   "format_version": 1,
   "id": "org.openpocket.pong",
   "name": "Pocket Pong",
-  "version": "0.3.0-dev",
+  "version": "0.4.0",
   "type": "game",
   "entry_scene": "res://packages/games/pong/main.tscn",
-  "sdk_version": "0.3.0",
+  "sdk_version": "0.4.0",
   "runtime": {
-    "min_version": "0.3.0",
+    "min_version": "0.4.0",
     "max_version": null
   },
   "author": {
@@ -28,5 +28,12 @@
   "store": {
     "featured": true,
     "tags": ["arcade", "two-player", "built-in"]
-  }
+  },
+  "achievements": [
+    {"id":"first_win","name":"First Win","description":"Win a match.","type":"event","target":1,"event":"match_won","points":10},
+    {"id":"clean_sweep","name":"Clean Sweep","description":"Win without conceding a point.","type":"event","target":1,"event":"clean_sweep","points":20},
+    {"id":"hard_cpu_win","name":"Hard Court","description":"Win against the hard CPU.","type":"event","target":1,"event":"hard_cpu_win","points":25},
+    {"id":"win_streak_5","name":"Five Straight","description":"Win five matches.","type":"counter","target":5,"event":"match_won","points":30}
+  ],
+  "cosmetics": {"provided":[{"id":"pong_court","type":"theme","name":"Pong Court","definition":"cosmetics/themes/pong_court.json"}],"rewards":[]}
 }

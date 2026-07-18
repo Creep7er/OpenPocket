@@ -69,6 +69,23 @@ static func validate(manifest: Dictionary) -> Dictionary:
 	for capability in required_capabilities(manifest):
 		if not SUPPORTED_CAPABILITIES.has(capability):
 			return {"ok": false, "error": "unsupported capability " + capability}
+	var achievement_ids: Dictionary = {}
+	for value in Array(manifest.get("achievements", [])):
+		var achievement := Dictionary(value)
+		var achievement_id := String(achievement.get("id", ""))
+		if achievement_id.is_empty() or achievement_id.contains(":") or achievement_ids.has(achievement_id):
+			return {"ok": false, "error": "invalid achievement id"}
+		if not ["event", "counter", "value"].has(String(achievement.get("type", "event"))):
+			return {"ok": false, "error": "invalid achievement type"}
+		achievement_ids[achievement_id] = true
+	for group in ["provided", "rewards"]:
+		for value in Array(Dictionary(manifest.get("cosmetics", {})).get(group, [])):
+			var cosmetic := Dictionary(value)
+			if not ["theme", "background"].has(String(cosmetic.get("type", ""))):
+				return {"ok": false, "error": "invalid cosmetic type"}
+			var asset_path := String(cosmetic.get("definition", cosmetic.get("asset", "")))
+			if asset_path.is_empty() or asset_path.is_absolute_path() or asset_path.contains(".."):
+				return {"ok": false, "error": "invalid cosmetic path"}
 	return {"ok": true, "error": ""}
 
 

@@ -78,6 +78,8 @@ func _commit_note() -> void:
 	else:
 		notes[selected_index] = clean
 	_save_notes()
+	CartridgeAchievements.emit_event("note_saved")
+	CartridgeAchievements.set_value("note_count", notes.size())
 	mode = "list"
 	CartridgeAudio.play_ui("select")
 

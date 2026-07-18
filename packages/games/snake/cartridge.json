@@ -2,12 +2,12 @@
   "format_version": 1,
   "id": "org.openpocket.snake",
   "name": "Snake",
-  "version": "0.3.0-dev",
+  "version": "0.4.0",
   "type": "game",
   "entry_scene": "res://packages/games/snake/main.tscn",
-  "sdk_version": "0.3.0",
+  "sdk_version": "0.4.0",
   "runtime": {
-    "min_version": "0.3.0",
+    "min_version": "0.4.0",
     "max_version": null
   },
   "author": {
@@ -28,5 +28,24 @@
   "store": {
     "featured": true,
     "tags": ["arcade", "singleplayer", "built-in"]
+  },
+  "achievements": [
+    {"id":"first_food","name":"First Bite","description":"Eat your first piece of food.","type":"event","target":1,"event":"food_eaten","hidden":false,"points":5},
+    {"id":"score_100","name":"Centurion","description":"Score 100 points in one run.","type":"value","target":100,"event":"run_score","comparison":"gte","hidden":false,"points":15},
+    {"id":"score_250","name":"Quarter Grand","description":"Score 250 points in one run.","type":"value","target":250,"event":"run_score","comparison":"gte","hidden":false,"points":25},
+    {"id":"long_snake","name":"Long Snake","description":"Reach length 25.","type":"value","target":25,"event":"snake_length","comparison":"gte","hidden":false,"points":20},
+    {"id":"hard_mode_win","name":"Hard Growth","description":"Reach length 40 on Hard or Extreme.","type":"event","target":1,"event":"game_completed","hidden":false,"points":35},
+    {"id":"extreme_survivor","name":"Extreme Survivor","description":"Score 100 points on Extreme.","type":"value","target":100,"event":"run_score","comparison":"gte","hidden":false,"points":30},
+    {"id":"complete_game","name":"Snake Master","description":"Complete the Snake Master challenge: reach length 40 on Hard or Extreme.","type":"event","target":1,"event":"game_completed","hidden":false,"points":50,"rewards":["completion_theme","completion_background"]}
+  ],
+  "cosmetics": {
+    "provided": [
+      {"id":"snake_green","type":"theme","name":"Snake Green","definition":"cosmetics/themes/snake_green.json"},
+      {"id":"snake_grid","type":"background","name":"Snake Grid","definition":"cosmetics/backgrounds/snake_grid.json"}
+    ],
+    "rewards": [
+      {"id":"completion_theme","type":"theme","name":"Emerald Champion","definition":"rewards/themes/emerald_champion.json","unlock_condition":"achievement:complete_game","permanent":true},
+      {"id":"completion_background","type":"background","name":"Golden Snake","definition":"rewards/backgrounds/golden_snake.json","unlock_condition":"achievement:complete_game","permanent":true}
+    ]
   }
 }

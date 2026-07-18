@@ -245,6 +245,9 @@ func _finish_match() -> void:
 	if not match_recorded:
 		stats = PongStatistics.update_after_match(stats, player_score, cpu_score, longest_rally)
 		PocketStorage.set_package_data(PACKAGE_ID, "statistics", stats)
+		if player_score > cpu_score:
+			CartridgeAchievements.emit_event("match_won")
+			if cpu_score == 0: CartridgeAchievements.emit_event("clean_sweep")
 		match_recorded = true
 	screen = SCREEN_MATCH_OVER
 	CartridgeAudio.play_ui("error")

@@ -29,9 +29,12 @@ var search_char_index := 1
 var last_result := ""
 var _title := "OPENPOCKET"
 var _intro := ""
+var preview_theme_id := ""
 
 
 func _ready() -> void:
+	if not StoreService.download_ready.is_connected(_on_store_download_ready):
+		StoreService.download_ready.connect(_on_store_download_ready)
 	set_process(true)
 	PocketFilePicker.file_selected.connect(_on_picker_file_selected)
 	PocketFilePicker.selection_cancelled.connect(_on_picker_cancelled)
@@ -133,11 +136,11 @@ func show_settings() -> void:
 	screen = "settings"
 	selected_index = 0
 	items = []
-	setting_keys = ["sound_enabled", "volume", "theme", "scanlines", "keyboard_hints", "developer_mode", "reset"]
+	setting_keys = ["sound_enabled", "volume", "customize", "scanlines", "keyboard_hints", "developer_mode", "reset"]
 	if bool(PocketStorage.get_setting("developer_mode", false)):
 		setting_keys.insert(setting_keys.size() - 1, "debug_info")
 	for key in setting_keys:
-		items.append({"label": key, "action": "setting", "key": key})
+		items.append({"label": key, "action": "customize" if key == "customize" else "setting", "key": key})
 	_render("SETTINGS", "LEFT RIGHT EDIT")
 
 
@@ -147,7 +150,7 @@ func show_about() -> void:
 	screen = "about"
 	selected_index = 0
 	items = [{"label": "Back", "action": "back"}]
-	_render("ABOUT", "OPENPOCKET 0.3.2\nSDK 0.3.2 EXPERIMENTAL\nCARTRIDGE FORMAT 1\nNO CODE SANDBOX")
+	_render("ABOUT", "OPENPOCKET 0.4.0\nSDK 0.4.0 EXPERIMENTAL\nCATALOG + LOCAL ACHIEVEMENTS\nNO CODE SANDBOX")
 
 
 func set_input_enabled(value: bool) -> void:
@@ -207,6 +210,7 @@ func _item_text(item: Dictionary) -> String:
 		return "SOUND     [" + ("ON" if bool(PocketStorage.get_setting("sound_enabled", true)) else "OFF") + "]"
 	if key == "theme":
 		return "THEME     [" + PocketTheme.theme_label() + "]"
+	if key == "customize": return "CUSTOMIZE  >"
 	if key == "scanlines":
 		return "SCANLINES [" + ("ON" if bool(PocketStorage.get_setting("scanlines", false)) else "OFF") + "]"
 	if key == "keyboard_hints":
@@ -222,6 +226,9 @@ func _move_selection(delta: int) -> void:
 	if items.is_empty():
 		return
 	selected_index = wrapi(selected_index + delta, 0, items.size())
+	if screen == "themes" and selected_index < items.size():
+		preview_theme_id = String(items[selected_index].get("theme_id", "mono"))
+		PocketTheme.preview(preview_theme_id)
 	PocketAudio.focus()
 	_render(_title, _intro_for_screen())
 
@@ -294,6 +301,16 @@ func _activate_selected() -> void:
 			_back()
 		"setting":
 			_activate_setting(String(item.get("key", "")))
+		"customize":
+			_show_customize()
+		"themes":
+			_show_themes()
+		"collection":
+			_show_collection()
+		"apply_theme":
+			PocketStorage.set_setting("theme", String(item.get("theme_id", "mono")))
+			PocketTheme.clear_preview()
+			_show_result("THEME", "APPLIED", true)
 
 
 func _activate_secondary() -> void:
@@ -371,6 +388,41 @@ func _show_cartridge_details(manifest: Dictionary) -> void:
 	_render(String(manifest.get("name", "CARTRIDGE")).to_upper(), intro)
 
 
+func _show_customize() -> void:
+	_push_state()
+	screen = "customize"
+	selected_index = 0
+	items = [{"label":"Theme","action":"themes"},{"label":"Collection","action":"collection"}]
+	_render("CUSTOMIZE", "LOCAL THEMES AND REWARDS")
+
+
+func _show_themes() -> void:
+	_push_state()
+	screen = "themes"
+	items = []
+	var current := String(PocketStorage.get_setting("theme", "mono"))
+	selected_index = 0
+	for theme in CosmeticsManager.list_themes():
+		var theme_id := String(theme.get("id", "mono"))
+		items.append({"label":String(theme.get("name", theme_id)),"badge":String(theme.get("source", "built-in")).to_upper(),"action":"apply_theme","theme_id":theme_id})
+		if theme_id == current: selected_index = items.size() - 1
+	preview_theme_id = current
+	PocketTheme.preview(current)
+	_render("THEMES", "A APPLY  B CANCEL")
+
+
+func _show_collection() -> void:
+	_push_state()
+	screen = "collection"
+	selected_index = 0
+	var progress := AchievementManager.all_progress()
+	var unlocked := 0
+	for value in progress.values():
+		if bool(Dictionary(value).get("unlocked", false)): unlocked += 1
+	items = [{"label":"Achievements " + str(unlocked) + "/" + str(progress.size()),"action":"back"},{"label":"Themes " + str(CosmeticsManager.list_themes().size()),"action":"back"},{"label":"Back","action":"back"}]
+	_render("COLLECTION", "LOCAL PROFILE")
+
+
 func _show_manage_cartridge(manifest: Dictionary) -> void:
 	_push_state()
 	pending_manage_manifest = manifest.duplicate(true)
@@ -414,7 +466,7 @@ func _show_store_home(push: bool) -> void:
 		{"label": "Updates", "action": "store_section", "section": "updates"},
 		{"label": "Search", "action": "store_section", "section": "search"},
 	]
-	_render("STORE", "DISCOVER CARTRIDGES")
+	_render("STORE", StoreService.status_label() + "\nGITHUB CATALOG")
 
 
 func _show_store_section(section: String) -> void:
@@ -488,6 +540,20 @@ func _show_store_details(item: Dictionary) -> void:
 
 func _install_from_store(item: Dictionary) -> void:
 	var download: Dictionary = StoreService.download_to_imports(String(item.get("id", "")), String(item.get("version", "")))
+	if bool(download.get("pending", false)):
+		_render("STORE", "DOWNLOADING...")
+		return
+	if not bool(download.get("ok", false)):
+		_show_result("INSTALL FAILED", String(download.get("error", "download failed")).to_upper(), true)
+		return
+	var install_result: Dictionary = CartridgeManager.install_from_file(String(download.get("path", "")), String(download.get("trust", "trusted")), true)
+	if bool(install_result.get("ok", false)):
+		_show_installed(Dictionary(install_result.get("record", {})), bool(install_result.get("restart_required", false)))
+	else:
+		_show_result("INSTALL FAILED", String(install_result.get("error", "install failed")).to_upper(), true)
+
+
+func _on_store_download_ready(download: Dictionary) -> void:
 	if not bool(download.get("ok", false)):
 		_show_result("INSTALL FAILED", String(download.get("error", "download failed")).to_upper(), true)
 		return
@@ -694,6 +760,7 @@ func _author_name(manifest: Dictionary) -> String:
 
 
 func _back() -> void:
+	if screen == "themes": PocketTheme.clear_preview()
 	if screen == "home":
 		PocketRouter.back()
 		return
@@ -714,7 +781,7 @@ func _intro_for_screen() -> String:
 		"settings":
 			return "LEFT RIGHT EDIT"
 		"about":
-			return "OPENPOCKET 0.3.2\nSDK 0.3.2 EXPERIMENTAL\nCARTRIDGE FORMAT 1\nNO CODE SANDBOX"
+			return "OPENPOCKET 0.4.0\nSDK 0.4.0 EXPERIMENTAL\nCARTRIDGE FORMAT 1\nNO CODE SANDBOX"
 	return _intro
 
 

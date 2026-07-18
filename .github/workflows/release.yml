@@ -42,6 +42,7 @@ jobs:
     env:
       GODOT_VERSION: 4.7-stable
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
       XDG_CONFIG_HOME: /tmp/popugvpocket-godot-config
       GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /tmp/popugvpocket-debug.keystore
       GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey

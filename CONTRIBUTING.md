@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping improve OpenPocket. Version 0.3.2 is experimental, so focused changes with explicit tests and documentation are especially valuable.
+Thank you for helping improve OpenPocket. SDK 0.4.0 is experimental, so focused changes with explicit tests and documentation are especially valuable.
 
 ## Requirements
 
@@ -30,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Compact Debug" `
-  -Output exports\android\openpocket-0.3.2-compact-debug.apk
+  -Output exports\android\openpocket-0.4.0-compact-debug.apk
 ```
 
 ## Runtime And UI Conventions

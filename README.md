@@ -4,7 +4,7 @@ OpenPocket is an open-source pixel-art virtual handheld built with Godot 4.7. It
 
 **Project status:** Experimental / Alpha
 
-**Current version:** 0.3.2
+**Current version:** 0.4.0 development branch
 
 **First public source snapshot:** 0.3.2
 
@@ -14,7 +14,7 @@ OpenPocket is an open-source pixel-art virtual handheld built with Godot 4.7. It
 
 OpenPocket presents a responsive handheld body around a pixel-perfect 400x320 virtual screen. The outer controls adapt to portrait phone screens, while Shell and cartridge content remain sharp and controller-driven.
 
-Version 0.3.2 proves the local cartridge lifecycle. It is not a secure third-party code platform: external cartridges can execute Godot code in the application process.
+Version 0.4.0 adds a GitHub-hosted catalog, offline cache, local achievements, cartridge cosmetics, and permanent milestone rewards. External cartridges can still execute Godot code in the application process.
 
 ## Highlights
 
@@ -24,7 +24,8 @@ Version 0.3.2 proves the local cartridge lifecycle. It is not a secure third-par
 - Package-scoped settings, save data, and cartridge audio ownership.
 - `.pctrg` installation, inspection, checksum verification, update, and uninstall flows.
 - Android Storage Access Framework picker without broad storage permissions.
-- Local mock Store with Featured, All, Updates, and Search views.
+- GitHub-hosted curated Store catalog with last-successful offline cache.
+- Local cartridge achievements and persistent Reward Vault cosmetics.
 - Experimental game/app SDK templates and cartridge builder.
 
 ## Screenshots
@@ -49,7 +50,9 @@ The repository also contains source and local Store fixtures for Breakout Mini, 
 
 A `.pctrg` file is a ZIP container with `cartridge.json`, `content.pck`, and optional metadata such as `README.md`, `LICENSE`, and `icon.png`. Built-in cartridges are trusted project source. External cartridges are installed into app-owned storage and may execute unsandboxed GDScript.
 
-**Library** lists cartridges currently available to launch. **Store** reads `store/mock_catalog.json` and demonstrates discovery and installation from repository-local files; it has no network backend.
+**Library** lists cartridges currently available to launch. **Store** refreshes the public static [openpocket-catalog](https://github.com/Creep7er/openpocket-catalog) over HTTPS and falls back to its last successful cache. Release assets are checksum-verified; the local provider remains a development fixture.
+
+Achievements and earned rewards stay on the device. Cartridge-provided cosmetics require their source cartridge; permanent rewards are copied into an independent Reward Vault and survive uninstall.
 
 ## Install A Cartridge
 
@@ -75,7 +78,7 @@ Checksums detect corruption. They do not prove publisher identity. See [SECURITY
 
 ## Android Builds
 
-The Android package id is `org.openpocket.app`; version 0.3.2 uses `versionCode` 5. The project provides development APK, compact debug APK, and unsigned AAB export presets. Prebuilt Android files will be attached to the Releases page after a public release is created.
+The Android package id is `org.openpocket.app`; version 0.4.0 uses `versionCode` 6. INTERNET is enabled for Store catalog/assets; the SAF picker still avoids broad storage permissions.
 
 The compact preset keeps arm64 and the SAF plugin while compressing the native Godot library. Production signing is not configured.
 
@@ -113,7 +116,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Compact Debug" `
-  -Output exports\android\openpocket-0.3.2-compact-debug.apk
+  -Output exports\android\openpocket-0.4.0-compact-debug.apk
 ```
 
 See [docs/android-build.md](docs/android-build.md) for setup details.
@@ -147,14 +150,19 @@ android/      OpenPocket Android plugin source and AAR
 
 - External Godot code is not sandboxed or digitally signed.
 - Developer Mode changes install policy; it does not make code safe.
-- Store content is local and mock-only; there is no network provider in use.
+- Catalog inclusion and SHA-256 validation do not sandbox external cartridge code.
+- Achievements are local statistics, not an anti-cheat system.
 - Mounted PCK files cannot be reliably unloaded, so some updates require restart.
 - The cartridge API is experimental and has no long-term compatibility guarantee yet.
 - AAB production signing and broad real-device coverage are not complete.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md). The next priorities are stronger trust and permissions, SDK stabilization, compatibility validation, and broader Android testing.
+See [ROADMAP.md](ROADMAP.md). The next priorities are cartridge signatures, publisher keys, stronger capability enforcement, SDK stabilization, and broader Android testing.
+
+## Privacy
+
+OpenPocket has no accounts, analytics, telemetry, or cloud achievement sync. Store refresh performs ordinary GET requests to GitHub; installed cartridge comparison happens locally and the installed list is not uploaded. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Contributing
 

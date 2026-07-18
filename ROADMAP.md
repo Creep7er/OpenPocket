@@ -2,21 +2,23 @@
 
 OpenPocket does not promise release dates. This roadmap separates current behavior from planned platform work.
 
-## Current: 0.3.2
+## Current Development: 0.4.0
 
 - Responsive Android-first Shell and pixel-perfect virtual screen.
 - Trusted built-in Snake, Pocket Pong, and Pocket Notes cartridges.
-- Experimental `.pctrg` installer, local mock Store, and cartridge SDK.
+- GitHub-hosted catalog, offline cache, local achievements, and cosmetic Reward Vault.
 - Package-scoped storage and audio ownership.
 - Compact debug APK and unsigned AAB export presets.
 
-## Next: 0.4
+## Stabilization: 0.4.x
 
-- Design cartridge signatures and a stronger permission model.
-- Replace or extend the local Store provider without presenting it as a security boundary.
-- Stabilize the SDK surface and package compatibility validation.
-- Expand real-device Android testing.
-- Improve accessibility and localization.
+- More curated catalog entries, accessibility work, and achievements UX improvements.
+- Expand real-device Android and offline/error-path testing.
+
+## Next: 0.5
+
+- Cartridge signatures and publisher keys.
+- Stronger capability enforcement and catalog trust policy.
 
 ## Later: 1.0
 

@@ -1,6 +1,6 @@
 # OpenPocket Architecture
 
-OpenPocket 0.3.2 separates the responsive handheld UI, pixel-perfect content, runtime services, trusted built-ins, and experimental external cartridge pipeline.
+OpenPocket 0.4.0 separates the responsive handheld UI, pixel-perfect content, runtime services, trusted built-ins, static catalog, local profile, and experimental external cartridge pipeline.
 
 ```mermaid
 flowchart TD
@@ -17,7 +17,10 @@ flowchart TD
     Builtins --> APIs["PocketStorage / CartridgeAudio / PocketTheme"]
     External --> APIs
     Picker["Desktop dialog or Android SAF"] --> Installer
-    Store --> Local["LocalStoreProvider / mock_catalog.json"]
+    Store --> GitHub["GitHub raw catalog + release assets"]
+    Store --> Cache["Last successful local cache"]
+    APIs --> Achievements["Local achievement profile"]
+    Achievements --> Vault["Permanent Reward Vault"]
 ```
 
 ## Shell And Display
@@ -56,7 +59,11 @@ Library launch prepares a package through `CartridgeManager`, opens a `Cartridge
 
 ## Store Provider
 
-OpenPocket 0.3.2 uses `LocalStoreProvider`, which reads `res://store/mock_catalog.json` and copies repository-local fixtures into import staging. The `HttpStoreProvider` file is a disabled design placeholder, not an active network backend. Android INTERNET permission is disabled.
+OpenPocket 0.4.0 uses `GitHubCatalogProvider` with a static raw HTTPS catalog, ETag/Last-Modified revalidation, request limits, and last-successful cache. `LocalStoreProvider` remains a development fixture. Downloaded release assets are checked against catalog SHA-256 before installer validation. Android INTERNET is used only for catalog and asset GET requests.
+
+## Achievements And Cosmetics
+
+`CartridgeAchievements` binds event/counter/value updates to the active cartridge ID. `AchievementManager` owns versioned atomic profile storage; cartridges cannot select another namespace. Cartridge-provided themes/backgrounds are discovered from installed manifests. Permanent reward assets are copied into `user://profile/cosmetics/` with checksums and metadata, so uninstalling the source cartridge does not break earned rewards. These local records are user-editable and are not anti-cheat evidence.
 
 ## Android File Picker
 
@@ -66,4 +73,4 @@ The OpenPocket Android plugin invokes Storage Access Framework. The user selects
 
 Built-ins are trusted because they ship with the source and application. External GDScript executes in the OpenPocket process and is not sandboxed. Developer Mode is an explicit risk gate, not isolation. Checksums validate expected bytes, not publisher identity. Capability declarations are not a process-level permission boundary.
 
-Future work may add signed manifests, trust roots, permissions, storage quotas, and an isolated scripting runtime such as a constrained Lua or WebAssembly environment. None of those controls are implemented in 0.3.2.
+Future work may add signed manifests, trust roots, permissions, storage quotas, and an isolated scripting runtime such as constrained Lua or WebAssembly. None of those controls are implemented in 0.4.0.

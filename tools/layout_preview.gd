@@ -8,15 +8,20 @@ var app: Control
 func _ready() -> void:
 	var options := _options()
 	var profile := String(options.get("profile", "vgirl"))
+	var from_profile := String(options.get("from-profile", profile))
 	var route := String(options.get("route", "home"))
 	var window_size := _parse_size(String(options.get("size", "852x393")))
 	var debug := String(options.get("debug", "false")) == "true"
 	var output := String(options.get("output", "artifacts/ui-preview/layout-preview.png"))
-	PocketStorage.set_setting("console_profile", profile)
+	PocketStorage.set_setting("console_profile", from_profile)
 	DisplayServer.window_set_size(window_size)
 	app = MainScene.instantiate()
 	add_child(app)
 	await _frames(5)
+	if from_profile != profile:
+		PocketStorage.set_setting("console_profile", profile)
+		app.console_frame.call("_layout_for_window", Vector2(window_size), Rect2(Vector2.ZERO, Vector2(window_size)))
+		await _frames(3)
 	app.shell_view.booting = false
 	match route:
 		"library": app.shell_view.show_library(PocketPackages.get_packages())

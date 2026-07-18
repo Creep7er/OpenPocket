@@ -80,6 +80,27 @@ func _run() -> void:
 		file.store_string("\n".join(lines) + "\n")
 	for line in lines:
 		print(line)
+	PocketStorage.set_setting("console_profile", "vboy")
+	var portrait_size := Vector2(540, 1200)
+	app.size = portrait_size
+	app.console_frame.size = portrait_size
+	app.console_frame.call("_layout_for_window", portrait_size, Rect2(Vector2.ZERO, portrait_size))
+	await get_tree().process_frame
+	var portrait_ok := int(app.console_frame.get("_ui_text_scale")) == 1
+	for button in app.console_frame.action_buttons.values():
+		var control := button as Control
+		print("  VBOY ACTION ", control.button, " RECT ", _rect(Rect2(control.position, control.size)), " MIN ", control.custom_minimum_size, " UNIFORM ", control.get_meta("uniform_style", false), " VISUAL ", control.get_meta("visual_size", 0.0))
+		portrait_ok = portrait_ok and control.custom_minimum_size == Vector2(56, 56)
+		portrait_ok = portrait_ok and not bool(control.get_meta("uniform_style", false))
+	var portrait_a: Control = app.console_frame.action_buttons[PocketInput.A]
+	var portrait_b: Control = app.console_frame.action_buttons[PocketInput.B]
+	var portrait_x: Control = app.console_frame.action_buttons[PocketInput.X]
+	var portrait_y: Control = app.console_frame.action_buttons[PocketInput.Y]
+	portrait_ok = portrait_ok and portrait_a.get_meta("visual_size") == portrait_b.get_meta("visual_size")
+	portrait_ok = portrait_ok and portrait_x.get_meta("visual_size") == portrait_y.get_meta("visual_size")
+	portrait_ok = portrait_ok and float(portrait_a.get_meta("visual_size")) > float(portrait_x.get_meta("visual_size"))
+	print("VGIRL -> VBOY STATE RESET | ", "PASS" if portrait_ok else "FAIL")
+	failed = failed or not portrait_ok
 	app.free()
 	get_tree().quit(1 if failed else 0)
 

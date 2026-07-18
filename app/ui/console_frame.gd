@@ -341,6 +341,8 @@ func _place_stick(direction_rect: Rect2) -> void:
 func _place_action_center(button: String, center: Vector2, visual_size: float) -> void:
 	var control: Control = action_buttons[button]
 	control.set_meta("uniform_style", false)
+	control.set_meta("visual_size", visual_size)
+	control.custom_minimum_size = Vector2(MIN_TOUCH_TARGET, MIN_TOUCH_TARGET)
 	var touch_size: float = floor(maxf(MIN_TOUCH_TARGET, visual_size + ACTION_TOUCH_PAD))
 	control.position = (center - Vector2(touch_size, touch_size) * 0.5).floor()
 	control.size = Vector2(touch_size, touch_size)

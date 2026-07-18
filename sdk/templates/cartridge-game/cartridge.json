@@ -5,9 +5,9 @@
   "version": "0.1.0",
   "type": "game",
   "entry_scene": "res://cartridges/org.example.game/main.tscn",
-  "sdk_version": "0.3.2",
+  "sdk_version": "0.4.0",
   "runtime": {
-    "min_version": "0.3.2",
+    "min_version": "0.4.0",
     "max_version": null
   },
   "author": {

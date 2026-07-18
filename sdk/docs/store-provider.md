@@ -9,6 +9,6 @@ download(cartridge_id, version)
 search(query)
 ```
 
-`LocalStoreProvider` is enabled by default and reads `res://store/mock_catalog.json`.
+`GitHubCatalogProvider` is enabled by default and reads the static public `catalog.json` over HTTPS with a last-successful cache. `LocalStoreProvider` remains a development fixture.
 
-`HttpStoreProvider` is a disabled stub. OpenPocket does not request Android INTERNET permission for this MVP.
+OpenPocket requests Android INTERNET only for catalog and release asset GET requests. Downloads remain subject to SHA-256 and installer validation.

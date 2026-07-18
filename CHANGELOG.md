@@ -4,7 +4,22 @@ This project follows the structure of [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
-No user-facing changes recorded.
+## [0.4.0] - In development
+
+### Added
+- GitHub-hosted cartridge catalog provider with last-successful offline cache.
+- Local cartridge achievements and Collection summary.
+- Cartridge-provided themes/backgrounds and a permanent Reward Vault.
+- Snake Master challenge and completion rewards.
+
+### Changed
+- Store distribution uses a public static GitHub catalog instead of a dedicated backend.
+- Cartridge manifests support optional achievements and cosmetics.
+- Uninstall keeps achievements and earned permanent rewards.
+
+### Security
+- Downloads require HTTPS release URLs and catalog SHA-256 verification.
+- External Godot code remains unsandboxed; achievements are not anti-cheat protected.
 
 ## [0.3.2] - First public source snapshot
 

@@ -7,6 +7,9 @@ Rules for AI-assisted work on OpenPocket:
 - Cartridge controls use `PocketInput`, not direct `Input`.
 - Cartridge persistence uses `PocketStorage`, not direct `FileAccess`.
 - Cartridge sound uses `CartridgeAudio`; never mutate global `AudioServer` state.
+- Cartridge achievements use `CartridgeAchievements`; never edit profile files directly.
+- Cartridge cosmetics are data-only and use safe relative paths; never accept cartridge shaders or cosmetic scripts.
+- Catalog entries use HTTPS release assets and SHA-256; catalog inclusion is not a sandbox.
 - Every built-in package has valid `manifest.json` and `cartridge.json` metadata and an entry in `packages/index.json`.
 - Preserve controller-only navigation and Android Back behavior.
 - Preserve the pixel visual language: hard edges, limited palettes, nearest filtering, and no standard Godot controls in the visible Shell.

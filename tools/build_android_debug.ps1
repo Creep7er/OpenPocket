@@ -1,5 +1,5 @@
 param(
-    [string]$Output = "exports/android/openpocket-0.3.2-development.apk",
+    [string]$Output = "exports/android/openpocket-0.4.0-development.apk",
     [string]$Preset = "Android Debug",
     [string]$Godot = "",
     [string]$JavaHome = "",

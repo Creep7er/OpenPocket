@@ -1,3 +1,3 @@
 # Example Game
 
-This template is a cartridge game for OpenPocket SDK `0.3.2`.
+This template is a cartridge game for experimental OpenPocket SDK `0.4.0`.

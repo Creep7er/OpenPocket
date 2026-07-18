@@ -250,6 +250,12 @@ func _step() -> void:
 		score += SnakeConfig.score_for_food(settings)
 		growth_pending += int(settings.get("growth", 1))
 		longest_snake = maxi(longest_snake, snake.size())
+		CartridgeAchievements.emit_event("food_eaten")
+		CartridgeAchievements.set_value("run_score", score)
+		CartridgeAchievements.set_value("snake_length", snake.size())
+		var difficulty := String(settings.get("difficulty", "normal"))
+		if snake.size() >= 40 and ["hard", "extreme"].has(difficulty):
+			CartridgeAchievements.emit_event("game_completed")
 		_spawn_food()
 	if growth_pending > 0:
 		growth_pending -= 1

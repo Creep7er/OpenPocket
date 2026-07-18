@@ -9,7 +9,7 @@ const MAX_EXTRACTED_SIZE := 128 * 1024 * 1024
 const MAX_FILES := 512
 const MAX_PATH_LENGTH := 180
 const MAX_DEPTH := 12
-const RUNTIME_VERSION := "0.3.2"
+const RUNTIME_VERSION := "0.4.0"
 
 
 func inspect(path: String) -> Dictionary:

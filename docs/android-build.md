@@ -1,6 +1,6 @@
 # Android Build
 
-OpenPocket 0.3.2 targets portrait Android with package id `org.openpocket.app`, `versionName` 0.3.2, and `versionCode` 5.
+OpenPocket 0.4.0 targets portrait Android with package id `org.openpocket.app`, `versionName` 0.4.0, and `versionCode` 6.
 
 ## Requirements
 
@@ -19,7 +19,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk-17 `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Compact Debug" `
-  -Output exports\android\openpocket-0.3.2-compact-debug.apk
+  -Output exports\android\openpocket-0.4.0-compact-debug.apk
 ```
 
 `-Godot` may be omitted when `godot` or `godot4` is on `PATH`. `-JavaHome` and `-AndroidHome` may be omitted when `JAVA_HOME` and `ANDROID_HOME` are set. The script installs the matching Godot Android build template into the ignored `android/build/` directory when needed.
@@ -34,7 +34,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk-17 `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Bundle" `
-  -Output exports\android\openpocket-0.3.2.aab `
+  -Output exports\android\openpocket-0.4.0.aab `
   -Release
 ```
 
@@ -46,7 +46,7 @@ Enable USB debugging, connect the device, then use the SDK `adb` executable:
 
 ```powershell
 adb devices
-adb install -r exports\android\openpocket-0.3.2-compact-debug.apk
+adb install -r exports\android\openpocket-0.4.0-compact-debug.apk
 ```
 
-OpenPocket uses Android Storage Access Framework for cartridge selection and does not request broad storage or INTERNET permissions in 0.3.2.
+OpenPocket uses Android Storage Access Framework without broad storage permissions. INTERNET is enabled in 0.4.0 for HTTPS catalog and release asset GET requests.

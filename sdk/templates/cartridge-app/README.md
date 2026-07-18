@@ -1,3 +1,3 @@
 # Example App
 
-This template is a cartridge app for OpenPocket SDK `0.3.2`.
+This template is a cartridge app for experimental OpenPocket SDK `0.4.0`.

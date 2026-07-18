@@ -102,6 +102,7 @@ func uninstall(cartridge_id: String, remove_data: bool = false) -> bool:
 	_registry.remove_record(cartridge_id)
 	if remove_data:
 		PocketStorage.clear_package_store(cartridge_id)
+	CosmeticsManager.ensure_active_available()
 	return true
 
 

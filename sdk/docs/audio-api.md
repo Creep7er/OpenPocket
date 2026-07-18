@@ -1,6 +1,6 @@
 # PocketAudio API
 
-OpenPocket SDK 0.3.2 separates Shell audio from cartridge audio.
+OpenPocket SDK 0.4.0 separates Shell audio from cartridge audio.
 
 Events:
 

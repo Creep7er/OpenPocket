@@ -40,7 +40,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -Release
 ```
 
-The local AAB preset is unsigned. `.github/workflows/release.yml` supports `debug-prerelease` without secrets and `production` with `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_ALIAS`. Godot's Android export preset uses the same release password for the keystore entry. Production mode fails clearly when secrets are missing; keys are never committed.
+The local AAB preset is unsigned. Tagged releases currently default to `debug-prerelease`, publish only a debug-signed APK and checksum, and do not require repository secrets. `.github/workflows/release.yml` also keeps a manually selected `production` mode for later use with `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_ALIAS`; that mode additionally builds the AAB. Godot's Android export preset uses the same release password for the keystore entry. Production mode fails clearly when secrets are missing; keys are never committed.
 
 ## Install On A Device
 

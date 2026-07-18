@@ -53,9 +53,9 @@ jobs:
         run: |
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             version="${GITHUB_REF_NAME#v}"
-            mode="production"
+            mode="debug-prerelease"
             draft="false"
-            prerelease="false"
+            prerelease="true"
           else
             version="${{ inputs.version }}"
             mode="${{ inputs.mode }}"
@@ -113,11 +113,11 @@ jobs:
           if [[ "${{ steps.release.outputs.mode }}" == "production" ]]; then
             apk="exports/android/popugvpocket-${version}.apk"
             "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Compact Debug" "$apk"
+            "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Bundle" "exports/android/popugvpocket-${version}.aab"
           else
             apk="exports/android/popugvpocket-${version}-debug.apk"
             "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-debug "Android Compact Debug" "$apk"
           fi
-          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Bundle" "exports/android/popugvpocket-${version}.aab"
           sha256sum exports/android/* > exports/android/SHA256SUMS.txt
       - name: Inspect APK
         run: |

@@ -114,6 +114,7 @@ jobs:
         shell: bash
         run: |
           version="${{ steps.release.outputs.version }}"
+          mkdir -p exports/android
           if [[ "${{ steps.release.outputs.mode }}" == "production" ]]; then
             apk="exports/android/popugvpocket-${version}.apk"
             "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --export-release "Android Compact Debug" "$apk"

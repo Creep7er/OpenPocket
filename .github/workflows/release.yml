@@ -106,8 +106,8 @@ jobs:
           chmod +x "Godot_v${GODOT_VERSION}_linux.x86_64"
           curl --fail --location --output templates.tpz "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz"
           mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
-          unzip -q templates.tpz -d template-extract
-          cp -R template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
+          unzip -q templates.tpz -d /tmp/popugvpocket-template-extract
+          cp -R /tmp/popugvpocket-template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
           python tools/configure_ci_android.py
           mkdir -p android/build
           unzip -q "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/android_source.zip" -d android/build

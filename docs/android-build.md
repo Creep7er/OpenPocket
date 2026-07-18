@@ -9,7 +9,7 @@ PopugVPocket 0.5.1 supports VBoy portrait and VGirl landscape Android profiles w
 - JDK 17.
 - Android SDK platform-tools, platforms 35 and 36, build-tools 35.0.1, CMake 3.10.2.4988404, and NDK 28.1.13356709.
 
-The repository does not include Godot, JDK, Android SDK, export templates, or signing keys. Install them normally or keep optional portable copies under ignored `.tools/` paths. CI stores the SDK paths in an isolated Godot configuration through `tools/configure_ci_android.py`, extracts the official `android_source.zip` build template without opening the editor, and generates a disposable standard Android debug keystore for each debug-prerelease run.
+The repository does not include Godot, JDK, Android SDK, export templates, or signing keys. Install them normally or keep optional portable copies under ignored `.tools/` paths. CI keeps the Android SDK and Godot toolchain outside the project checkout, stores their paths in an isolated Godot configuration through `tools/configure_ci_android.py`, extracts the official `android_source.zip` build template without opening the editor, and generates a disposable standard Android debug keystore for each debug-prerelease run.
 
 ## Compact Debug APK
 

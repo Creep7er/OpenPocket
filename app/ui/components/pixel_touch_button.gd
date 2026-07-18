@@ -19,7 +19,7 @@ func setup(text: String, pocket_button: String, is_compact: bool = false, is_pri
 	button = pocket_button
 	compact = is_compact
 	primary = is_primary
-	custom_minimum_size = Vector2(94, 44) if compact else Vector2(86, 86)
+	custom_minimum_size = Vector2(82, 40) if compact else Vector2(56, 56)
 	queue_redraw()
 
 
@@ -97,6 +97,8 @@ func _visual_rect() -> Rect2:
 	if compact:
 		var visual_size: Vector2 = Vector2(maxf(1.0, size.x - COMPACT_TOUCH_PAD * 2.0), maxf(1.0, size.y - COMPACT_TOUCH_PAD * 2.0))
 		return Rect2(((size - visual_size) * 0.5).floor(), visual_size.floor())
-	var side: float = floor(maxf(1.0, minf(size.x, size.y) - ACTION_TOUCH_PAD * 2.0))
+	var requested: float = float(get_meta("visual_size", 0.0))
+	var side: float = floor(requested if requested > 0.0 else maxf(1.0, minf(size.x, size.y) - ACTION_TOUCH_PAD * 2.0))
+	side = minf(side, minf(size.x, size.y))
 	var visual_size: Vector2 = Vector2(side, side)
 	return Rect2(((size - visual_size) * 0.5).floor(), visual_size)

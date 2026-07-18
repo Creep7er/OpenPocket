@@ -4,6 +4,15 @@ This project follows the structure of [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Changed
+- Reworked VGirl as a landscape `directions | display | actions` console with wider thumb-zone separation.
+- Replaced XYAB inner squares with stepped octagonal faces and pixel edge highlights.
+- Replaced the crowded Android adaptive foreground with a padded V-Parrot emblem.
+
+### Fixed
+- Constrained Breakout Leave Round selection rows to the modal panel in built-in and installable sources.
+- Added reproducible menu screenshots covering Shell, system overlay, Snake, Pong, Notes, and Breakout states.
+
 ## [0.5.0] - Reborn
 
 ### Added

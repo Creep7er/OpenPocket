@@ -1,6 +1,6 @@
 # Android Build
 
-PopugVPocket 0.5.0 targets portrait Android with package id `org.popugonet.popugvpocket`, `versionName` 0.5.0, and `versionCode` 6.
+PopugVPocket 0.5.0 supports VBoy portrait and VGirl landscape Android profiles with package id `org.popugonet.popugvpocket`, `versionName` 0.5.0, and `versionCode` 6.
 
 ## Requirements
 
@@ -23,6 +23,8 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
 ```
 
 `-Godot` may be omitted when `godot` or `godot4` is on `PATH`. `-JavaHome` and `-AndroidHome` may be omitted when `JAVA_HOME` and `ANDROID_HOME` are set. The script installs the matching Godot Android build template into the ignored `android/build/` directory when needed.
+
+Every Android preset uses `branding/android/icon-legacy.png`, `icon-foreground.png`, and `icon-background.png`. The foreground is transparent and safe-zone padded; the background is full bleed. Keep the launcher fields synchronized when adding another Android preset.
 
 The compact preset exports arm64, keeps the PopugVPocket SAF plugin, and compresses the native Godot library. It is debug-signed for local testing.
 

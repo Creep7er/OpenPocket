@@ -8,6 +8,7 @@ const SCREEN_ASPECT := 1.25
 const MIN_SIDE_MARGIN := 8.0
 const SAFE_FALLBACK_MARGIN := 10.0
 const MAX_CONSOLE_WIDTH := 720.0
+const MAX_VGIRL_HEIGHT := 860.0
 const MIN_TOUCH_TARGET := 56.0
 const HEADER_RATIO := 0.055
 const SCREEN_WIDTH_RATIO := 0.92
@@ -16,6 +17,8 @@ const SCREEN_GAP_RATIO := 0.038
 const SYSTEM_BUTTON_RATIO := 0.052
 const BOTTOM_MARGIN_RATIO := 0.045
 const ACTION_TOUCH_PAD := 16.0
+const VGIRL_SCREEN_WIDTH_RATIO := 0.48
+const VGIRL_SIDE_GAP := 10.0
 
 signal virtual_button_changed(button: String, pressed: bool)
 
@@ -240,46 +243,59 @@ func _layout_controls() -> void:
 func _layout_vgirl() -> void:
 	var outer_margin: float = clamp(_safe_rect.size.y * 0.018, 4.0, SAFE_FALLBACK_MARGIN)
 	_content_rect = _safe_rect.grow(-outer_margin)
-	var console_h: float = minf(MAX_CONSOLE_WIDTH, _content_rect.size.y)
+	var console_h: float = minf(MAX_VGIRL_HEIGHT, _content_rect.size.y)
 	var console_w: float = minf(_content_rect.size.x, console_h * 1.78)
 	_console_rect = Rect2((_content_rect.position + (_content_rect.size - Vector2(console_w, console_h)) * 0.5).floor(), Vector2(console_w, console_h).floor())
-	var margin: float = floor(clamp(_console_rect.size.y * 0.055, 12.0, 26.0))
+	var margin: float = floor(clamp(_console_rect.size.y * 0.045, 12.0, 22.0))
 	var header_h: float = floor(clamp(_console_rect.size.y * 0.09, 34.0, 52.0))
 	var available_h: float = _console_rect.size.y - header_h - margin * 2.0
-	var screen_h: float = floor(minf(available_h, (_console_rect.size.x * 0.58 - margin * 2.0) / SCREEN_ASPECT))
+	var system_h: float = floor(clamp(available_h * 0.13, 36.0, 46.0))
+	var system_gap: float = floor(clamp(available_h * 0.04, 8.0, 14.0))
+	var display_h: float = available_h - system_h - system_gap
+	var center_w: float = floor(_console_rect.size.x * VGIRL_SCREEN_WIDTH_RATIO)
+	var screen_h: float = floor(minf(display_h, (center_w - VGIRL_SIDE_GAP * 2.0) / SCREEN_ASPECT))
 	var screen_w: float = floor(screen_h * SCREEN_ASPECT)
-	_screen_rect = Rect2(Vector2(_console_rect.position.x + margin, _console_rect.position.y + header_h + (available_h - screen_h) * 0.5).floor(), Vector2(screen_w, screen_h))
+	var screen_x: float = floor(_console_rect.get_center().x - screen_w * 0.5)
+	var display_top: float = _console_rect.position.y + header_h + margin
+	_screen_rect = Rect2(Vector2(screen_x, display_top + (display_h - screen_h) * 0.5).floor(), Vector2(screen_w, screen_h))
 	screen_holder.position = _screen_rect.position
 	screen_holder.size = _screen_rect.size
 	screen_container.position = Vector2.ZERO
 	screen_container.size = _screen_rect.size
 	_screen_scale = floor(minf(screen_w / float(PocketScreen.LOGICAL_SIZE.x), screen_h / float(PocketScreen.LOGICAL_SIZE.y)))
-	var zone := Rect2(Vector2(_screen_rect.end.x + margin, _console_rect.position.y + header_h), Vector2(_console_rect.end.x - _screen_rect.end.x - margin * 2.0, available_h))
-	_controls_rect = zone
-	var control_size: float = floor(minf(zone.size.y * 0.54, zone.size.x * 0.48))
-	var left_side := String(PocketStorage.get_setting("stick_side", "left")) == "left"
-	var direction_x: float = zone.position.x if left_side else zone.end.x - control_size
-	_dpad_rect = Rect2(Vector2(direction_x, zone.position.y + (zone.size.y - control_size) * 0.5).floor(), Vector2(control_size, control_size))
+
+	var left_zone := Rect2(
+		Vector2(_console_rect.position.x + margin, display_top),
+		Vector2(_screen_rect.position.x - _console_rect.position.x - margin - VGIRL_SIDE_GAP, display_h)
+	)
+	var right_zone := Rect2(
+		Vector2(_screen_rect.end.x + VGIRL_SIDE_GAP, display_top),
+		Vector2(_console_rect.end.x - margin - _screen_rect.end.x - VGIRL_SIDE_GAP, display_h)
+	)
+	_controls_rect = Rect2(left_zone.position, Vector2(right_zone.end.x - left_zone.position.x, display_h))
+	var control_size: float = floor(clamp(minf(left_zone.size.x * 0.82, display_h * 0.58), 96.0, 150.0))
+	_dpad_rect = Rect2((left_zone.get_center() - Vector2(control_size, control_size) * 0.5).floor(), Vector2(control_size, control_size))
 	dpad.position = _dpad_rect.position
 	dpad.size = _dpad_rect.size
 	_place_stick(_dpad_rect)
-	var action_x: float = zone.end.x - control_size * 0.58 if left_side else zone.position.x + control_size * 0.58
-	var cluster_center := Vector2(action_x, zone.position.y + zone.size.y * 0.48)
-	var primary_size: float = floor(clamp(control_size * 0.30, 54.0, 82.0))
-	var secondary_size: float = floor(primary_size * 0.84)
-	var spacing: float = floor(primary_size * 0.78)
+
+	var primary_size: float = floor(clamp(control_size * 0.50, 68.0, 90.0))
+	var secondary_size: float = floor(primary_size * 0.86)
+	var spacing: float = floor(maxf(primary_size * 1.08, secondary_size + 12.0))
+	var cluster_extent: float = spacing + (primary_size + ACTION_TOUCH_PAD) * 0.5
+	var cluster_center := right_zone.get_center().floor()
 	_place_action_center(PocketInput.X, cluster_center + Vector2(0, -spacing), secondary_size)
 	_place_action_center(PocketInput.Y, cluster_center + Vector2(-spacing, 0), secondary_size)
 	_place_action_center(PocketInput.A, cluster_center + Vector2(spacing, 0), primary_size)
 	_place_action_center(PocketInput.B, cluster_center + Vector2(0, spacing), primary_size)
-	_action_cluster_rect = Rect2(cluster_center - Vector2(spacing * 1.6, spacing * 1.6), Vector2(spacing * 3.2, spacing * 3.2))
-	var sys_w: float = floor(clamp(zone.size.x * 0.19, 66.0, 94.0))
-	var sys_h: float = floor(clamp(zone.size.y * 0.10, 38.0, 48.0))
-	var sys_gap: float = floor(clamp(zone.size.x * 0.05, 16.0, 30.0))
-	var sys_x: float = floor(zone.position.x + (zone.size.x - sys_w * 2.0 - sys_gap) * 0.5)
-	var sys_y: float = floor(zone.end.y - sys_h)
-	_menu_rect = Rect2(Vector2(sys_x, sys_y), Vector2(sys_w, sys_h))
-	_back_rect = Rect2(Vector2(sys_x + sys_w + sys_gap, sys_y), Vector2(sys_w, sys_h))
+	_action_cluster_rect = Rect2(cluster_center - Vector2(cluster_extent, cluster_extent), Vector2(cluster_extent * 2.0, cluster_extent * 2.0))
+
+	var sys_w: float = floor(clamp(center_w * 0.25, 70.0, 94.0))
+	var sys_gap: float = floor(clamp(center_w * 0.08, 18.0, 30.0))
+	var sys_x: float = floor(_console_rect.get_center().x - (sys_w * 2.0 + sys_gap) * 0.5)
+	var sys_y: float = floor(display_top + display_h + system_gap)
+	_menu_rect = Rect2(Vector2(sys_x, sys_y), Vector2(sys_w, system_h))
+	_back_rect = Rect2(Vector2(sys_x + sys_w + sys_gap, sys_y), Vector2(sys_w, system_h))
 	system_buttons[PocketInput.MENU].position = _menu_rect.position
 	system_buttons[PocketInput.MENU].size = _menu_rect.size
 	system_buttons[PocketInput.EXIT].position = _back_rect.position

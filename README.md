@@ -18,7 +18,7 @@ PopugVPocket 0.5.0 is a clean rebirth of OpenPocket. It intentionally resets app
 
 ## Highlights
 
-- VBoy portrait and VGirl landscape layouts around the same pixel-perfect 400x320 screen.
+- VBoy portrait and VGirl landscape layouts around the same pixel-perfect 400x320 screen; VGirl places directions left and actions right of the display.
 - Pixel D-pad or fixed/floating virtual stick, A/B/X/Y buttons, MENU, and BACK controls.
 - Keyboard, gamepad, touch, and Android Back integration through `PocketInput`.
 - Package-scoped settings, save data, and cartridge audio ownership.
@@ -37,6 +37,10 @@ PopugVPocket 0.5.0 is a clean rebirth of OpenPocket. It intentionally resets app
 | Breakout | Install warning |
 | --- | --- |
 | ![Breakout](docs/screenshots/breakout.png) | ![Install cartridge](docs/screenshots/install-cartridge.png) |
+
+| VGirl landscape | Breakout dialog | System menu |
+| --- | --- | --- |
+| ![VGirl landscape](docs/screenshots/vgirl-home.png) | ![Breakout dialog](docs/screenshots/breakout-dialog.png) | ![System menu](docs/screenshots/system-menu.png) |
 
 ## Built-In Cartridges
 

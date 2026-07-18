@@ -30,7 +30,7 @@ flowchart TD
 
 `app/ui/console_frame.gd` fills the available window, applies Android safe-area margins, and lays out the physical controls responsively. Shell and cartridge scenes render into a separate 400x320 `SubViewport` using nearest-neighbor filtering. Integer scaling is limited to the virtual display rather than the whole phone layout.
 
-`ConsoleLayoutManager` selects VBoy portrait or VGirl landscape and persists the choice. `PocketScreen` owns the invariant 400x320 logical display. Physical controls map through `PocketInput`, so cartridges never know the active profile or whether directions came from a D-pad, fixed stick, or floating stick.
+`ConsoleLayoutManager` selects VBoy portrait or VGirl landscape and persists the choice. VBoy stacks the display above its lower controls; VGirl uses independent left-direction, center-display, and right-action zones with MENU/BACK below the display. `PocketScreen` owns the invariant 400x320 logical display. Physical controls map through `PocketInput`, so cartridges never know the active profile or whether directions came from a D-pad, fixed stick, or floating stick.
 
 ## Runtime Services
 

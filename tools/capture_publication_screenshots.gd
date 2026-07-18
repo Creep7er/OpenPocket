@@ -44,6 +44,9 @@ func _capture_shell_screens() -> void:
 	app.shell_view.show_home()
 	await _capture("home.png")
 	await _capture("vboy-home.png")
+	app.call("_open_system_menu")
+	await _capture("system-menu.png")
+	app.call("_close_system_menu")
 
 	var packages: Array[Dictionary] = PocketPackages.get_packages()
 	app.shell_view.show_library(packages)
@@ -69,10 +72,12 @@ func _capture_shell_screens() -> void:
 
 func _capture_builtin_screens() -> void:
 	await _launch_builtin("org.popugonet.popugvpocket.snake")
+	await _capture("snake-menu.png")
 	app.active_game.call("_start_game")
 	await _capture("snake.png")
 
 	await _launch_builtin("org.popugonet.popugvpocket.pong")
+	await _capture("pong-menu.png")
 	app.active_game.call("_start_match")
 	await _capture("pong.png")
 
@@ -92,8 +97,12 @@ func _capture_breakout() -> void:
 	CartridgeAudio.begin_scope("org.popugonet.popugvpocket.breakout")
 	app.console_frame.set_screen(breakout)
 	await _wait_frames(3)
+	await _capture("breakout-menu.png")
 	breakout.call("_start_game")
 	breakout.call("_serve_ball")
+	breakout.screen = "quit"
+	await _capture("breakout-dialog.png")
+	breakout.screen = "playing"
 	await _capture("breakout.png")
 
 

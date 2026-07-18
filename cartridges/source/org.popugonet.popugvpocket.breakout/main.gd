@@ -410,7 +410,7 @@ func _draw_quit(palette: Dictionary) -> void:
 	draw_rect(panel, palette["dark"], true)
 	draw_rect(panel, palette["hi"], false, 2)
 	PixelFont.draw_text(self, panel.position + Vector2(18, 16), "LEAVE ROUND?", palette["hi"], 1)
-	_draw_rows(["CANCEL", "MAIN MENU"], quit_index, 148, palette)
+	_draw_rows(["CANCEL", "MAIN MENU"], quit_index, 148, palette, int(panel.position.x + 12), int(panel.size.x - 24))
 
 
 func _draw_end(palette: Dictionary) -> void:
@@ -420,11 +420,11 @@ func _draw_end(palette: Dictionary) -> void:
 	_draw_rows(["RETRY", "MAIN MENU"], end_index, 166, palette)
 
 
-func _draw_rows(labels: Array[String], current: int, start_y: int, palette: Dictionary) -> void:
+func _draw_rows(labels: Array[String], current: int, start_y: int, palette: Dictionary, row_x: int = 20, row_width: int = 360) -> void:
 	for index in range(labels.size()):
 		var selected := index == current
 		var y := start_y + index * 26
 		if selected:
-			draw_rect(Rect2(Vector2(20, y - 5), Vector2(size.x - 40, 20)), palette["light"], true)
+			draw_rect(Rect2(Vector2(row_x, y - 5), Vector2(row_width, 20)), palette["light"], true)
 		var color: Color = palette["dark"] if selected else palette["hi"]
-		PixelFont.draw_text(self, Vector2(28, y), ("> " if selected else "  ") + labels[index], color, 1)
+		PixelFont.draw_text(self, Vector2(row_x + 8, y), ("> " if selected else "  ") + labels[index], color, 1)

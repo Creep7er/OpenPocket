@@ -11,4 +11,3 @@ const MASCOT_ACHIEVEMENT := preload("res://app/assets/branding/v-parrot-achievem
 const MASCOT_OFFLINE := preload("res://app/assets/branding/v-parrot-offline.png")
 const MASCOT_EMPTY := preload("res://app/assets/branding/v-parrot-empty.png")
 const MASCOT_WARNING := preload("res://app/assets/branding/v-parrot-warning.png")
-

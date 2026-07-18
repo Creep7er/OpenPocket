@@ -13,4 +13,4 @@ cartridge/
   LICENSE
 ```
 
-The builder remaps this directory to `res://cartridges/<id>/`. Do not reference another cartridge root or OpenPocket shell internals.
+The builder remaps this directory to `res://cartridges/<id>/`. Do not reference another cartridge root or PopugVPocket shell internals.

@@ -9,7 +9,7 @@ Forbidden: direct `Input`, direct `FileAccess`, shell internals, arbitrary resou
 ```text
 Read AGENTS.md and docs/AI_AGENT_GUIDE.md.
 
-Create an OpenPocket cartridge based on this template.
+Create an PopugVPocket cartridge based on this template.
 
 Concept:
 [describe cartridge]

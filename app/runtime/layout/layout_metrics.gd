@@ -13,4 +13,3 @@ static func safe_rect(window_size: Vector2) -> Rect2:
 	if OS.has_feature("android"):
 		result = result.grow_individual(0, -SAFE_TOP_FALLBACK, 0, -SAFE_BOTTOM_FALLBACK)
 	return result
-

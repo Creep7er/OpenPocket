@@ -1,25 +1,25 @@
-# OpenPocket
+# PopugVPocket
 
-OpenPocket is an open-source pixel-art virtual handheld built with Godot 4.7. It combines an Android-first console shell, trusted built-in apps and games, and an experimental installable cartridge format.
+PopugVPocket is an open-source pixel-art virtual handheld built with Godot 4.7. It combines an Android-first console shell, trusted built-in apps and games, and an experimental installable cartridge format.
 
 **Project status:** Experimental / Alpha
 
-**Current version:** 0.4.0 development branch
+**Current version:** 0.5.0 Reborn development branch
 
 **First public source snapshot:** 0.3.2
 
-![OpenPocket interface showing Home, Library, and Breakout](docs/screenshots/openpocket-hero.png)
+![PopugVPocket interface showing Home, Library, and Breakout](docs/screenshots/popugvpocket-hero.png)
 
-## What Is OpenPocket?
+## What Is PopugVPocket?
 
-OpenPocket presents a responsive handheld body around a pixel-perfect 400x320 virtual screen. The outer controls adapt to portrait phone screens, while Shell and cartridge content remain sharp and controller-driven.
+PopugVPocket presents a responsive handheld body around a pixel-perfect 400x320 virtual screen. The outer controls adapt to portrait phone screens, while Shell and cartridge content remain sharp and controller-driven.
 
-Version 0.4.0 adds a GitHub-hosted catalog, offline cache, local achievements, cartridge cosmetics, and permanent milestone rewards. External cartridges can still execute Godot code in the application process.
+PopugVPocket 0.5.0 is a clean rebirth of OpenPocket. It intentionally resets application and cartridge compatibility, adds VBoy and VGirl physical profiles, configurable D-pad/stick controls, the V-Parrot mascot, and Cartridge Format v2. External cartridges can still execute Godot code in the application process.
 
 ## Highlights
 
-- Responsive portrait layout with safe-area-aware margins.
-- Pixel D-pad, A/B/X/Y buttons, MENU, and BACK controls.
+- VBoy portrait and VGirl landscape layouts around the same pixel-perfect 400x320 screen.
+- Pixel D-pad or fixed/floating virtual stick, A/B/X/Y buttons, MENU, and BACK controls.
 - Keyboard, gamepad, touch, and Android Back integration through `PocketInput`.
 - Package-scoped settings, save data, and cartridge audio ownership.
 - `.pctrg` installation, inspection, checksum verification, update, and uninstall flows.
@@ -43,14 +43,15 @@ Version 0.4.0 adds a GitHub-hosted catalog, offline cache, local achievements, c
 - **Snake:** Classic and Time Attack modes, configurable rules, high scores, and statistics.
 - **Pocket Pong:** Player vs CPU with configurable difficulty, target score, and match settings.
 - **Pocket Notes:** Short local notes edited with an on-screen pixel keyboard.
+- **Breakout Mini:** Reworked brick breaker with settings, statistics, lives, and reliable stepped collision handling.
 
-The repository also contains source and local Store fixtures for Breakout Mini, Pocket Dice, and Pixel Clock. They are examples, not remotely distributed packages.
+The repository also contains source and local Store fixtures for Pocket Dice and Pixel Clock. They are examples, not remotely distributed packages.
 
 ## Cartridge System
 
-A `.pctrg` file is a ZIP container with `cartridge.json`, `content.pck`, and optional metadata such as `README.md`, `LICENSE`, and `icon.png`. Built-in cartridges are trusted project source. External cartridges are installed into app-owned storage and may execute unsandboxed GDScript.
+A `.pctrg` file is a ZIP container using PopugVPocket Cartridge Format v2 with `cartridge.json`, `content.pck`, and optional metadata such as `README.md`, `LICENSE`, and `icon.png`. Format v1 cartridges are rejected. Built-in cartridges are trusted project source. External cartridges are installed into app-owned storage and may execute unsandboxed GDScript.
 
-**Library** lists cartridges currently available to launch. **Store** refreshes the public static [openpocket-catalog](https://github.com/Creep7er/openpocket-catalog) over HTTPS and falls back to its last successful cache. Release assets are checksum-verified; the local provider remains a development fixture.
+**Library** lists cartridges currently available to launch. **Store** refreshes the public static [popugvpocket-catalog](https://github.com/Creep7er/popugvpocket-catalog) over HTTPS and falls back to its last successful cache. Release assets are checksum-verified; the local provider remains a development fixture.
 
 Achievements and earned rewards stay on the device. Cartridge-provided cosmetics require their source cartridge; permanent rewards are copied into an independent Reward Vault and survive uninstall.
 
@@ -78,7 +79,7 @@ Checksums detect corruption. They do not prove publisher identity. See [SECURITY
 
 ## Android Builds
 
-The Android package id is `org.openpocket.app`; version 0.4.0 uses `versionCode` 6. INTERNET is enabled for Store catalog/assets; the SAF picker still avoids broad storage permissions.
+The Android package id is `org.popugonet.popugvpocket`; version 0.5.0 uses `versionCode` 6. INTERNET is enabled for Store catalog/assets; the SAF picker still avoids broad storage permissions.
 
 The compact preset keeps arm64 and the SAF plugin while compressing the native Godot library. Production signing is not configured.
 
@@ -91,8 +92,8 @@ Requirements:
 - Git.
 
 ```powershell
-git clone https://github.com/Creep7er/OpenPocket.git
-cd OpenPocket
+git clone https://github.com/Creep7er/PopugVPocket.git
+cd PopugVPocket
 godot --path .
 ```
 
@@ -116,7 +117,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\build_android_debug.ps1 `
   -JavaHome path\to\jdk `
   -AndroidHome path\to\android-sdk `
   -Preset "Android Compact Debug" `
-  -Output exports\android\openpocket-0.4.0-compact-debug.apk
+  -Output exports\android\popugvpocket-0.5.0-compact-debug.apk
 ```
 
 See [docs/android-build.md](docs/android-build.md) for setup details.
@@ -130,7 +131,7 @@ python tools/cartridge_builder.py build path\to\cartridge
 python tools/cartridge_builder.py validate dist\cartridges\your.cartridge-0.1.0.pctrg
 ```
 
-Guides live in [docs/cartridges](docs/cartridges/overview.md) and [sdk/docs](sdk/docs/creating-a-game.md). Standalone templates are also available in [openpocket-app-template](https://github.com/Creep7er/openpocket-app-template) and [openpocket-game-template](https://github.com/Creep7er/openpocket-game-template).
+Guides live in [docs/cartridges](docs/cartridges/overview.md) and [sdk/docs](sdk/docs/creating-a-game.md). Standalone templates are also available in [popugvpocket-app-template](https://github.com/Creep7er/popugvpocket-app-template) and [popugvpocket-game-template](https://github.com/Creep7er/popugvpocket-game-template).
 
 ## Repository Structure
 
@@ -142,7 +143,7 @@ store/        Local mock catalog and package fixtures
 sdk/          Experimental API docs, schemas, and templates
 docs/         Architecture, Android, cartridge, and release docs
 tools/        Validators, builders, smoke tests, and capture tools
-android/      OpenPocket Android plugin source and AAR
+android/      PopugVPocket Android plugin source and AAR
 .github/      Issue templates and CI workflows
 ```
 
@@ -154,6 +155,7 @@ android/      OpenPocket Android plugin source and AAR
 - Achievements are local statistics, not an anti-cheat system.
 - Mounted PCK files cannot be reliably unloaded, so some updates require restart.
 - The cartridge API is experimental and has no long-term compatibility guarantee yet.
+- Old Android app data is not automatically readable under the new package id. Developer Mode exposes a manual safe-data legacy backup importer.
 - AAB production signing and broad real-device coverage are not complete.
 
 ## Roadmap
@@ -162,7 +164,7 @@ See [ROADMAP.md](ROADMAP.md). The next priorities are cartridge signatures, publ
 
 ## Privacy
 
-OpenPocket has no accounts, analytics, telemetry, or cloud achievement sync. Store refresh performs ordinary GET requests to GitHub; installed cartridge comparison happens locally and the installed list is not uploaded. See [docs/PRIVACY.md](docs/PRIVACY.md).
+PopugVPocket has no accounts, analytics, telemetry, or cloud achievement sync. Store refresh performs ordinary GET requests to GitHub; installed cartridge comparison happens locally and the installed list is not uploaded. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Contributing
 
@@ -172,4 +174,4 @@ A concise Russian overview is available at [docs/README.ru.md](docs/README.ru.md
 
 ## License
 
-OpenPocket is licensed under the [MIT License](LICENSE). Third-party and project-authored asset notices are listed in [THIRD_PARTY.md](THIRD_PARTY.md).
+PopugVPocket is licensed under the [MIT License](LICENSE). Third-party and project-authored asset notices are listed in [THIRD_PARTY.md](THIRD_PARTY.md).

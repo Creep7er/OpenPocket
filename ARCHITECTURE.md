@@ -1,12 +1,13 @@
-# OpenPocket Architecture
+# PopugVPocket Architecture
 
-OpenPocket 0.4.0 separates the responsive handheld UI, pixel-perfect content, runtime services, trusted built-ins, static catalog, local profile, and experimental external cartridge pipeline.
+PopugVPocket 0.5.0 separates profile-driven handheld hardware, pixel-perfect content, runtime services, trusted built-ins, a moderated static catalog, local profile data, and the experimental external cartridge pipeline.
 
 ```mermaid
 flowchart TD
     Android["Android or desktop window"] --> Frame["Responsive ConsoleFrame"]
     Frame --> Display["400x320 SubViewport"]
-    Frame --> Touch["D-pad and action controls"]
+    Frame --> Profiles["ConsoleLayoutManager: VBoy / VGirl"]
+    Profiles --> Touch["D-pad or pixel stick and action controls"]
     Display --> Shell["Shell routes and overlays"]
     Shell --> Manager["CartridgeManager"]
     Shell --> Store["StoreService"]
@@ -28,6 +29,8 @@ flowchart TD
 `app/main.gd` owns routing, the active cartridge, the system overlay, Android Back handling, and package launch. `app/shell/shell_view.gd` provides Home, Library, Store, install, Settings, and About flows. `app/shell/system_menu.gd` provides pause, restart, package settings, Library, Home, and confirmed application exit.
 
 `app/ui/console_frame.gd` fills the available window, applies Android safe-area margins, and lays out the physical controls responsively. Shell and cartridge scenes render into a separate 400x320 `SubViewport` using nearest-neighbor filtering. Integer scaling is limited to the virtual display rather than the whole phone layout.
+
+`ConsoleLayoutManager` selects VBoy portrait or VGirl landscape and persists the choice. `PocketScreen` owns the invariant 400x320 logical display. Physical controls map through `PocketInput`, so cartridges never know the active profile or whether directions came from a D-pad, fixed stick, or floating stick.
 
 ## Runtime Services
 
@@ -59,7 +62,7 @@ Library launch prepares a package through `CartridgeManager`, opens a `Cartridge
 
 ## Store Provider
 
-OpenPocket 0.4.0 uses `GitHubCatalogProvider` with a static raw HTTPS catalog, ETag/Last-Modified revalidation, request limits, and last-successful cache. `LocalStoreProvider` remains a development fixture. Downloaded release assets are checked against catalog SHA-256 before installer validation. Android INTERNET is used only for catalog and asset GET requests.
+PopugVPocket 0.5.0 uses `GitHubCatalogProvider` with catalog schema v2, approved-only entries, ETag/Last-Modified revalidation, request limits, and last-successful cache. `LocalStoreProvider` remains a development fixture. Downloaded release assets are checked against catalog SHA-256 before installer validation. Android INTERNET is used only for catalog and asset GET requests.
 
 ## Achievements And Cosmetics
 
@@ -67,10 +70,14 @@ OpenPocket 0.4.0 uses `GitHubCatalogProvider` with a static raw HTTPS catalog, E
 
 ## Android File Picker
 
-The OpenPocket Android plugin invokes Storage Access Framework. The user selects one `.pctrg`; the plugin copies it to app-owned storage and does not request broad storage access. Desktop builds use Godot `FileDialog` with the same installer handoff.
+The PopugVPocket Android plugin invokes Storage Access Framework. The user selects one `.pctrg`; the plugin copies it to app-owned storage and does not request broad storage access. Desktop builds use Godot `FileDialog` with the same installer handoff.
 
 ## Security Boundary
 
-Built-ins are trusted because they ship with the source and application. External GDScript executes in the OpenPocket process and is not sandboxed. Developer Mode is an explicit risk gate, not isolation. Checksums validate expected bytes, not publisher identity. Capability declarations are not a process-level permission boundary.
+Built-ins are trusted because they ship with the source and application. External GDScript executes in the PopugVPocket process and is not sandboxed. Developer Mode is an explicit risk gate, not isolation. Checksums validate expected bytes, not publisher identity. Capability declarations are not a process-level permission boundary.
 
-Future work may add signed manifests, trust roots, permissions, storage quotas, and an isolated scripting runtime such as constrained Lua or WebAssembly. None of those controls are implemented in 0.4.0.
+Future work may add signed manifests, trust roots, permissions, storage quotas, and an isolated scripting runtime such as constrained Lua or WebAssembly. None of those controls are implemented in 0.5.0.
+
+## Compatibility Reset
+
+Format v2 intentionally rejects OpenPocket format v1 cartridges. The new Android package id has a separate sandbox, so no automatic old `user://` migration is claimed. A Developer Tools flow can import whitelisted JSON from a manually selected legacy ZIP after backing up current data; executable files and old cartridges are skipped.

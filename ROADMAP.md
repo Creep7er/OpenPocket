@@ -1,8 +1,8 @@
 # Roadmap
 
-OpenPocket does not promise release dates. This roadmap separates current behavior from planned platform work.
+PopugVPocket does not promise release dates. This roadmap separates current behavior from planned platform work.
 
-## Current Development: 0.4.0
+## Current Development: 0.5.0
 
 - Responsive Android-first Shell and pixel-perfect virtual screen.
 - Trusted built-in Snake, Pocket Pong, and Pocket Notes cartridges.

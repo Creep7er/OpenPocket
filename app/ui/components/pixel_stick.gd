@@ -116,4 +116,3 @@ func _draw_stepped_disc(rect: Rect2, fill: Color, outline: Color) -> void:
 	])
 	draw_colored_polygon(points, fill)
 	draw_polyline(points + PackedVector2Array([points[0]]), outline, 3.0)
-

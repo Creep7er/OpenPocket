@@ -14,12 +14,12 @@
 - **Purpose:** Community Code of Conduct text adapted in `CODE_OF_CONDUCT.md`.
 - **Repository path:** `CODE_OF_CONDUCT.md`.
 
-## OpenPocket Android File Picker
+## PopugVPocket Android File Picker
 
 - **Source:** Project-authored.
 - **License:** MIT under this repository.
 - **Purpose:** Android Storage Access Framework bridge.
-- **Repository paths:** `android/plugins/openpocket_file_picker/` and `android/plugins/OpenPocketFilePicker.aar`.
+- **Repository paths:** `android/plugins/popugvpocket_file_picker/` and `android/plugins/PopugVPocketFilePicker.aar`.
 
 ## Pixel Font, Icons, Screenshots, And Visuals
 

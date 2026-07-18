@@ -14,4 +14,3 @@ static func get_profile(profile_id: String) -> ConsoleLayoutProfile:
 		if profile.id == profile_id:
 			return profile
 	return VBoy.new()
-

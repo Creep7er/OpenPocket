@@ -17,4 +17,3 @@ func _init(profile_id: String, label: String, screen_orientation: int, aspect: f
 
 func is_landscape() -> bool:
 	return orientation == DisplayServer.SCREEN_LANDSCAPE
-

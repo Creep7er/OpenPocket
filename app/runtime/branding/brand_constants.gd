@@ -14,4 +14,3 @@ const CARTRIDGE_FORMAT_VERSION := 2
 const CATALOG_SCHEMA_VERSION := 2
 const CATALOG_URL := "https://raw.githubusercontent.com/Creep7er/popugvpocket-catalog/main/catalog.json"
 const REPOSITORY_URL := "https://github.com/Creep7er/PopugVPocket"
-

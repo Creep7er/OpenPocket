@@ -40,13 +40,26 @@ func _run() -> void:
 		if menu.intersects(back): reasons.append("menu/back")
 		var overlap := not reasons.is_empty()
 		var action_keys: Array = app.console_frame.action_buttons.keys()
+		var action_rects: Dictionary = {}
 		for first_index in range(action_keys.size()):
+			var first_key: String = String(action_keys[first_index])
+			var first: Control = app.console_frame.action_buttons[first_key]
+			action_rects[first_key] = Rect2(first.position, first.size)
 			for second_index in range(first_index + 1, action_keys.size()):
-				var first: Control = app.console_frame.action_buttons[action_keys[first_index]]
 				var second: Control = app.console_frame.action_buttons[action_keys[second_index]]
 				if Rect2(first.position, first.size).intersects(Rect2(second.position, second.size)):
 					overlap = true
 					reasons.append(String(action_keys[first_index]) + "/" + String(action_keys[second_index]))
+		var x_rect: Rect2 = action_rects[PocketInput.X]
+		var y_rect: Rect2 = action_rects[PocketInput.Y]
+		var a_rect: Rect2 = action_rects[PocketInput.A]
+		var b_rect: Rect2 = action_rects[PocketInput.B]
+		var equal_buttons := x_rect.size == y_rect.size and x_rect.size == a_rect.size and x_rect.size == b_rect.size
+		var plus_layout := is_equal_approx(x_rect.get_center().x, b_rect.get_center().x) and is_equal_approx(y_rect.get_center().y, a_rect.get_center().y)
+		plus_layout = plus_layout and x_rect.get_center().y < y_rect.get_center().y and b_rect.get_center().y > y_rect.get_center().y
+		plus_layout = plus_layout and y_rect.get_center().x < x_rect.get_center().x and a_rect.get_center().x > x_rect.get_center().x
+		if not equal_buttons: reasons.append("unequal action buttons")
+		if not plus_layout: reasons.append("action cluster is not plus")
 		var readable := screen.size.x >= 280.0 and screen.size.y >= 224.0
 		var controls_ok := dpad.size.x >= 96.0
 		var screen_fill: float = screen.size.x / console.size.x
@@ -54,8 +67,9 @@ func _run() -> void:
 		var text_scale_ok := int(app.console_frame.get("_ui_text_scale")) == 2
 		if window_size.y >= 500:
 			var minimum_action_width := 200.0 if window_size.y >= 700 else 175.0
-			controls_ok = dpad.size.x >= 190.0 and actions.size.x >= minimum_action_width
-		var passed := not overlap and readable and controls_ok and fills_console and text_scale_ok
+			var minimum_dpad_width := 250.0 if window_size.y >= 700 else 190.0
+			controls_ok = dpad.size.x >= minimum_dpad_width and actions.size.x >= minimum_action_width
+		var passed := not overlap and readable and controls_ok and fills_console and text_scale_ok and equal_buttons and plus_layout
 		failed = failed or not passed
 		lines.append("%dx%d | %d | %s | %s | %s | %d%% | %s | %s" % [window_size.x, window_size.y, int(app.console_frame.get("_ui_text_scale")), _rect(screen), _rect(dpad), _rect(actions), int(screen_fill * 100.0), "YES" if overlap else "NO", "PASS" if passed else "FAIL"])
 		if not reasons.is_empty(): lines.append("  overlap: " + ", ".join(reasons))

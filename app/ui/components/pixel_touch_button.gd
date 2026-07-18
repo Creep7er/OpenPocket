@@ -86,9 +86,10 @@ func _draw_stepped_button(rect: Rect2, p: Dictionary) -> void:
 		for point in points:
 			shadow.append(point + Vector2(4, 4))
 		draw_colored_polygon(shadow, p["dark"])
-	draw_colored_polygon(points, p["case_mid"] if primary else p["case_light"])
+	var emphasized := primary or bool(get_meta("uniform_style", false))
+	draw_colored_polygon(points, p["case_mid"] if emphasized else p["case_light"])
 	draw_polyline(points + PackedVector2Array([points[0]]), p["dark"], 3.0)
-	var highlight: Color = p["case_light"] if primary else p["hi"]
+	var highlight: Color = p["case_light"] if emphasized else p["hi"]
 	draw_line(points[0] + Vector2(3, 3), points[1] - Vector2(3, -3), highlight, 2.0)
 	draw_line(points[7] + Vector2(3, 3), points[0] + Vector2(3, 3), highlight, 2.0)
 

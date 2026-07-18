@@ -21,7 +21,7 @@ const ACTION_TOUCH_PAD := 16.0
 const VGIRL_SIDE_GAP := 8.0
 const VGIRL_MIN_SIDE_ZONE := 124.0
 const VGIRL_SCALE_STEP := 0.125
-const VGIRL_MAX_DPAD_SIZE := 220.0
+const VGIRL_MAX_DPAD_SIZE := 260.0
 
 signal virtual_button_changed(button: String, pressed: bool)
 
@@ -266,6 +266,8 @@ func _layout_vgirl() -> void:
 	var system_gap: float = floor(clamp(available_h * 0.025, 6.0, 14.0))
 	var display_h: float = available_h - system_h - system_gap
 	var max_screen_w: float = maxf(240.0, _console_rect.size.x - (VGIRL_MIN_SIDE_ZONE + VGIRL_SIDE_GAP) * 2.0 - margin * 2.0)
+	if _console_rect.size.y >= 500.0:
+		max_screen_w = minf(max_screen_w, floor(_console_rect.size.x * 0.50))
 	var candidate_scale: float = minf(display_h / float(PocketScreen.LOGICAL_SIZE.y), max_screen_w / float(PocketScreen.LOGICAL_SIZE.x))
 	# Eighth-step nearest scaling keeps the screen large on 16:9 devices without
 	# applying fractional scaling to the physical controls.
@@ -338,6 +340,7 @@ func _place_stick(direction_rect: Rect2) -> void:
 
 func _place_action_center(button: String, center: Vector2, visual_size: float) -> void:
 	var control: Control = action_buttons[button]
+	control.set_meta("uniform_style", false)
 	var touch_size: float = floor(maxf(MIN_TOUCH_TARGET, visual_size + ACTION_TOUCH_PAD))
 	control.position = (center - Vector2(touch_size, touch_size) * 0.5).floor()
 	control.size = Vector2(touch_size, touch_size)
@@ -349,6 +352,8 @@ func _place_action_cluster(zone: Rect2, primary_size: float, secondary_size: flo
 	for button in [PocketInput.X, PocketInput.Y, PocketInput.A, PocketInput.B]:
 		var control: Control = action_buttons[button]
 		var rect: Rect2 = layout[button]
+		control.set_meta("uniform_style", true)
+		control.custom_minimum_size = rect.size
 		control.position = rect.position
 		control.size = rect.size
 		control.set_meta("visual_size", float(visual_sizes[button]))

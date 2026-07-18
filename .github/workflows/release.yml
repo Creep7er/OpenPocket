@@ -31,6 +31,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android:
     runs-on: ubuntu-24.04
@@ -98,7 +102,7 @@ jobs:
           mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}"
           unzip -q templates.tpz -d template-extract
           cp -R template-extract/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}/"
-          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path . --install-android-build-template
+          "./Godot_v${GODOT_VERSION}_linux.x86_64" --headless --editor --quit --path . --install-android-build-template
       - name: Essential checks
         run: |
           python tools/validate_project.py
